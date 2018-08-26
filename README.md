@@ -27,7 +27,7 @@ Can Make backups of your DBs.
 
 Can Delete Database with BackUp System.
 
-# To check the lastest Documentation versions visit:
+# To check the latest Documentation versions visit:
 
 http://maricuto.xyz/marticutodb
 
