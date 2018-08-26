@@ -30,3 +30,5 @@ Can Delete Database with BackUp System.
 To check the lastest Documentation versions visit:
 
 http://maricuto.xyz/marticutodb
+
+To start using the Database Just require: "init.php"... in MaricutoDB folder.
