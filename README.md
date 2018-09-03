@@ -29,6 +29,6 @@ Can Delete Database with BackUp System.
 
 # To check the latest Documentation versions visit:
 
-http://maricuto.xyz/marticutodb
+http://maricuto.xyz/maricutodb
 
 To start using the Database Just require: "init.php"... in MaricutoDB folder.
