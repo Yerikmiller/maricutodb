@@ -42,6 +42,6 @@ http://maricuto.xyz/maricutodb
 
 ### To start using the Database Just
 ---------------------
-```html
-   <span style="color:blue">require_once "init.php";* in MaricutoDB folder.</span>
+```php
+  require_once "init.php"; # in MaricutoDB folder
 ```
