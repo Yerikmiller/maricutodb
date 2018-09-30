@@ -24,6 +24,14 @@ class Create
 {
 	public static function THIS( $db_name, $__id__, $ItemName, $Content, $Ispassword = FALSE )
 	{
+		if ( empty($db_name) || empty($__id__) || empty($ItemName) )
+		{
+			$msg  = 'You are Creating objects from empty values'.'<br>';
+			$msg .= 'The three firts arguments (MaricutoDB::Create) can not be empty'.'<br>';
+			echo $msg;
+			return NULL;
+		}
+		if ( empty($Content) ){$Content = 'N/A';}
 		Database::CreateDB($db_name,$__id__) ;
 		Database::InsertData($db_name,$__id__,$ItemName,$Content,$Ispassword );
 	}
@@ -33,6 +41,14 @@ class MaricutoDB
 {
 	public static function Create( $db_name, $__id__, $ItemName, $Content, $Ispassword = FALSE )
 	{
+		if ( empty($db_name) || empty($__id__) || empty($ItemName) )
+		{
+			$msg  = 'You are Creating objects from empty values'.'<br>';
+			$msg .= 'The three firts arguments (MaricutoDB::Create) can not be empty'.'<br>';
+			echo $msg;
+			return NULL;
+		}
+		if ( empty($Content) ){$Content = 'N/A';}
 		Database::CreateDB($db_name,$__id__) ;
 		Database::InsertData($db_name,$__id__,$ItemName,$Content,$Ispassword );
 	}

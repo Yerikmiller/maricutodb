@@ -48,7 +48,6 @@ class Write
 		return $NavigationNumbers;
 
 	}
-
 	public static function PaginatorButtons( 
 		$limit,
 		$PaginatorName,
@@ -100,8 +99,8 @@ class Write
 			$DisabledButtonPrevius = '';
 			$DisabledButtonNext = 'disabled="TRUE"';
 		}
-
-
+		if ( $GLOBALS['PerPage'] > $GLOBALS['CountData'] ){return NULL;}
+			
 
 
 
@@ -169,9 +168,9 @@ class Write
 			echo $NextButton;
 			echo $FormEnd;
 		}
-		elseif ($PagePosition > $limit){
-			header('Location: http://'.dirname($ACTUAL_LINK));
-		}
+		# elseif ($PagePosition > $limit){
+		# 	header('Location: http://'.dirname($ACTUAL_LINK));
+		# }
 	}
 }
 

@@ -97,10 +97,36 @@ Class Generate
 			return $PagePosition = self::PagePosition( $_POST[$PaginatorName] );
 		} else{return $PagePosition = 0;}
 	}
-	public static function Row( $Get, $data )
+	public static function Row( $Get, $data, $output = 'N/A' )
 	{
-		if(!isset($Get->$data)){return $Get->$data = 'N/A';}
+		if(!isset($Get->$data)){return $Get->$data = $output;}
 		return $Get->$data;
+	}
+	public static function SortingFiles( $files, $sortby = 'new' )
+	{
+		$SORT_ = ($sortby == 'old') ? SORT_ASC : SORT_DESC;
+		array_multisort(
+		array_map( 'filemtime', $files ), SORT_NUMERIC, $SORT_, $files);
+		return $files;
+	}
+	public static function query( $query_array )
+	{
+		$query_array = preg_replace('/[^\p{L}\p{N}\s]/u', '', $query_array);
+		$query_array = trim($query_array);
+		$specials = array('á','é','í','ó','ú', '  ');
+		$i = 0;
+		foreach ($specials as $specials) 
+		{
+			$i++;
+			if ( $i == 1){$replace = 'a';}
+			if ( $i == 2){$replace = 'e';}
+			if ( $i == 3){$replace = 'i';}
+			if ( $i == 4){$replace = 'o';}
+			if ( $i == 5){$replace = 'u';}
+			$query_array = str_replace($specials, $replace, $query_array);
+		}
+		$query_array = explode(' ', $query_array);
+		return $query_array;
 	}
 }
 
@@ -118,7 +144,6 @@ class FindFile
 		$JSON = DB_LIBS_FOLDER.$db_name.'/'.md5($__id__).'.json';
 		return $JSON;
 	}
-
 } 
 
 /**
@@ -179,7 +204,7 @@ class Decode
 
 class GET
 {
-	public static function Table($db_name, $__id__)
+	public static function Table( $db_name, $__id__ )
 	{
 		#####################
 		$db_folder_name = DB_LIBS_FOLDER.$db_name;
@@ -191,65 +216,82 @@ class GET
 		$get = (object) $get;
 		return $get;
 	}
-
-	public static function TablesFrom( $db_name, $sortby = 'new', $paginator = FALSE, $PagePosition = '0' , $PerPage = '10', $ReturnLimit = FALSE )
+	# Obtener PATHS de todos los archivos JSON de cada DB
+	public static function DBs()
 	{
+		$dirs = array_filter(glob(DB_LIBS_FOLDER.'*'), 'is_dir');
+		$each_db = array();
+		foreach ($dirs as $JSONFiles) 
+		{
+			$searching = glob($JSONFiles."/*.json");
+			$each_db[] = $searching;
 
-		#################
-		$db_name = md5($db_name);
-		$db_folder_name = DB_LIBS_FOLDER.$db_name;
-		$files = glob($db_folder_name."/*.json");
-		#################
-		$SORT_ = ($sortby == 'old') ? SORT_ASC : SORT_DESC;
-		array_multisort(
-		array_map( 'filemtime', $files ), SORT_NUMERIC, $SORT_, $files);
-		################## PAGINATOR ##################
-		if ( $paginator == TRUE)
-		{
-			if(!is_numeric($PerPage)){$PerPage = '10';}
-			$limit = count($files);
-			$limit = $limit / $PerPage;
-			if (is_float($limit))
-			{
-				$limit = intval( $limit + 1 );
-			}
-			## Si es ReturnLimit Verdadero se Dara el valor del Limite
-			if ($ReturnLimit == TRUE){return $limit;}
-			$PerPage = intval($PerPage);
-			$files = Generate::Pagination($files, $PagePosition, $PerPage, $limit);
 		}
-		###############################################
-		$GetData = array();
-		foreach ($files as $IDs) 
+		$JSONFiles = array();
+		foreach ($each_db as $files) 
 		{
-			$IDs = basename($IDs);
-			$get = GET::Table($db_name, $IDs);
-			$GetData[] = $get;
+			# se iguala files a un array con todos los paths
+			# en este caso nos dejara un array, cada array representa una carpta
+			# los strings separados por " |--| " representan los path de cada DB
+			$files = implode(' |--| ', $files);
+			$JSONFiles[] = $files;
 		}
-		$GetData = (object) $GetData;
-		$GetData = json_encode($GetData, FALSE);
-		$GetData = json_decode($GetData, FALSE);
-		return $GetData;
+		# ahora combinaremos todos los path
+		$JSONFiles = implode( ' |--| ', $JSONFiles);
+		# Ahora que todos los paths estan en un string, convertimos a un solo array
+		# que contiene todos los paths
+		$JSONFiles = explode( ' |--| ', $JSONFiles);
+		# ¡listo!
+		return $JSONFiles;
 	}
+	public static function OnlyOneDB( $db_name )
+	{
+		$db_name = md5($db_name);
+		if (!file_exists( DB_LIBS_FOLDER.$db_name )){return FALSE;}
+		$files = glob(DB_LIBS_FOLDER.$db_name."/*.json");
+		return $files;
+	}
+	# Obtener PATHS de todos los archivos JSON de varios DB especificos
+	public static function DB( $db_names )
+	{
+		if ( !is_array( $db_names ) )
+		{
+			$files = self::OnlyOneDB( $db_names );
+			return $files;
+		} 
+		else
+		{
+			$each_db = array(); # variable para almacenar rutas en arrays separados..
+			foreach ( $db_names as $db_name) 
+			{
+				$db_name = md5($db_name);
+				if (!file_exists( DB_LIBS_FOLDER.$db_name ))
+				{/* No hacer nada si un DB no existe y seguir con el loop.*/}
+				else
+				{
+					$JSONFiles = glob( DB_LIBS_FOLDER.$db_name."/*.json" );
+					$each_db[] = $JSONFiles; # Guardar en array separados cada DB
+				}
+			}
+			$JSONFiles = array();
+			foreach ($each_db as $files) 
+			{
+				$files = implode(' |--| ', $files);
+				$JSONFiles[] = $files;
+			}
+		$JSONFiles = implode( ' |--| ', $JSONFiles);
+		$JSONFiles = explode( ' |--| ', $JSONFiles);
+		return $JSONFiles;
+		}
 
+	}
 	public static function TIME( $timezone )
 	{
 		date_default_timezone_set($timezone);
 		$time = date("Y").'-'.date("m").'-'.date("d");
 		return $time;
 	}
-	public static function PaginatorLimit($db_name, $PerPage)
-	{
-		$limit = GET::TablesFrom( 
-		$db_name, 
-		$sort = 'none', 
-		$pagination = TRUE, 
-		$PagePosition = 'none', 
-		$PerPage, 
-		$ReturnLimit = TRUE);
-		return 	$limit;
 
-	}
 }
 
 ###################
