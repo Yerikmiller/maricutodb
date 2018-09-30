@@ -38,9 +38,9 @@ class Database
 /*
 *
 *
-*
+* This create a folder, and this 
+* class will be used in Create::DB method
 * 
-*
 *
 */
 
@@ -61,8 +61,8 @@ class Database
 /*
 *
 *
-*	Genera un archivo .JSON su nombre viene dado de la __id___
-*	Además es codificado con MD5 para dar seguridad a la base de datos.
+*	Generate a JSON file (DBTable) , and include in a folder(DB_NAME)
+*	these are in md5 encrypt
 *
 *
 */
@@ -91,7 +91,7 @@ class Database
 *
 *
 *
-*
+*	This will insert data to a table, not for update it.
 *
 *
 */
@@ -124,7 +124,7 @@ class Database
 *
 *
 *	
-*
+* 	This will search all the db_names, and ouput an ARRAY
 *
 *
 */
@@ -239,10 +239,10 @@ public static function SearchDB( $db_name, $getAll = FALSE, $IsObject = FALSE )
 /*
 *
 *
-*
-*
-*
-*
+*	Output a table info if this exist. If the table (JSON file)
+*	don't exist will return FALSE
+*	You can show all table info with ITEMNAME->ITEMCONTENT
+*	layout, setting the third argument as TRUE.
 */
 
 	public static function Table( $db_name, $__id__, $Show = FALSE)
