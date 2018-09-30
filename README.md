@@ -42,4 +42,6 @@ http://maricuto.xyz/maricutodb
 
 ### To start using the Database Just
 ---------------------
-![#1589F0](https://placehold.it/15/1589F0/000000?text=+require_once "init.php";* in MaricutoDB folder.) `#1589F0`
+```html
+   <span style="color:blue">require_once "init.php";* in MaricutoDB folder.</span>
+```
