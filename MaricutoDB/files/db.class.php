@@ -50,29 +50,18 @@ class Database
 		$db_encrypted = $db_name;
 		$NewDBInsert = $db_encrypted;
 		$db_name = md5($db_name);
-
-		# Filename to save the database name in a JSON.
-		$log_DB = DB_LIBS_FOLDER.'db_list.json';
 		$time = GET::TIME( $GLOBALS['timezone'] );
 		##########################
 		if(!file_exists(DB_LIBS_FOLDER.$db_name)){
 			mkdir(DB_LIBS_FOLDER.$db_name, 0600);}
-		if(!file_exists($log_DB)){file_put_contents($log_DB, ''); return null;}
-
-		$GetDataDBs = file_get_contents($log_DB);
-		$GetDataDBs = json_decode($GetDataDBs, FALSE);
-		$GetDataDBs->ListModificationDate = $time;
-		$GetDataDBs->$db_encrypted = $time;
-		$GetDataDBs = json_encode($GetDataDBs, JSON_PRETTY_PRINT);
-		file_put_contents($log_DB, $GetDataDBs);
-		file_put_contents(DB_LIBS_FOLDER.$db_name.'/.htacces', 'Options -Indexes');
+		file_put_contents(DB_LIBS_FOLDER.$db_name.'/.htacces', 'Options -Indexes');		
 		return TRUE;
 	}
 
 /*
 *
 *
-*	Genera un archivo .JSON su nombre viene dado de la ___id___
+*	Genera un archivo .JSON su nombre viene dado de la __id___
 *	Además es codificado con MD5 para dar seguridad a la base de datos.
 *
 *
@@ -171,28 +160,59 @@ public static function SearchDB( $db_name, $getAll = FALSE, $IsObject = FALSE )
 /*
 *
 *
+*	Return all databases created
+* 	This can be used for check how many Dbs we have.
+*	And anothers functions like including many DBs data throght
+*  	this JSON list.
+*/
+
+	public static function names()
+	{
+		$dirs = array_filter(glob(DB_LIBS_FOLDER.'*'), 'is_dir');
+		$each_db = array();
+		foreach ($dirs as $JSONFiles) 
+		{
+			$searching = glob($JSONFiles."/*.json");
+			foreach ($searching as $paths) 
+			{
+				$each_db[] = $paths;
+				break;
+			}
+		}
+		$each_name = array();
+		foreach ($each_db as $each_path) 
+		{
+			$each_path = file_get_contents($each_path);
+			$each_path = json_decode($each_path, TRUE);
+			$each_name[] = $each_path;
+		}
+		$db_names = array();
+		foreach ($each_name as $names) 
+		{
+			$db_names[$names['FromDB']] = $names['FromDB'];
+		}
+		return $db_names;
+	}
+
+/*
 *
 *
 *
+*	Exclude items from the name list of DBs
+*	$exclusion must be contain a string separated with commas
 *
 */
 
-	public static function SearchAllDB()
+	public static function exclude( $names, $exclusions )
 	{
-		######################################
-		$log_DB = DB_LIBS_FOLDER.'db_list.json';
-		if(!file_exists($log_DB)){file_put_contents($log_DB, '');}
-		$GetDataDBs = file_get_contents($log_DB);
-		$GetDataDBs = json_decode($GetDataDBs, FALSE);
-		foreach ($GetDataDBs as $GetDataDBs => $value) {
-			echo($value).' | ';
-			echo($GetDataDBs).'<br>';
+		$exclusions = explode(', ', $exclusions);
+		foreach ($exclusions as $exclusion) 
+		{
+			$keyUnset = array_search($exclusion, $names);
+			unset( $names[$keyUnset]);
 		}
-		######################################
-
-		
-	}
-
+		return $names;
+	}	
 /*
 *
 *
@@ -231,12 +251,13 @@ public static function SearchDB( $db_name, $getAll = FALSE, $IsObject = FALSE )
 		$db_url = FindFile::JSON( $db_name, $__id__ );
 		##########################
 		if(!file_exists($db_url)){return null;}
-		
 		$data = file_get_contents( $db_url );
 		$get = json_decode( $data, true );
 		$get = (object) $get;
-		if ($Show == TRUE){
-			foreach ($get as $get => $value) {
+		if ($Show == TRUE)
+		{
+			foreach ($get as $get => $value) 
+			{
 				echo($get).' | ';
 				echo($value).'<br>';
 				
@@ -244,28 +265,7 @@ public static function SearchDB( $db_name, $getAll = FALSE, $IsObject = FALSE )
 		}
 		return $get;
 	}
-/*
-*
-*
-* 	Search for an existing data and output his id...
-*
-*
-*
-*/
-	public static function OutputId($db_name, $ItemName, $Data)
-	{
-		#####################
-		$GetData = GET::TablesFrom( $db_name );
-		#####################	
-		foreach ($GetData as $GetData) 
-		{	
-			if ( strtolower($GetData->$ItemName) == strtolower($Data) )
-			{
-				return $DataID = $GetData->__id__;
-			}
-		}
-		return FALSE;
-	}
+
 
 
 
@@ -358,29 +358,7 @@ public static function SearchDB( $db_name, $getAll = FALSE, $IsObject = FALSE )
 			chmod($old, 0755);
 			rmdir($old);
 	}
-/*
-*
-*
-* 		Update the Db Table
-*		__id__ it is a identifier for DB tables. Need to be unique in each case.
-*		So old_id pint to a specific existing JSON File. New_id create another one.
-*
-*/
 
-	public static function UpdateTableName($db_name, $__id__, $new_id)
-	{
-		##########################
-		$db_url = FindFile::JSON( $db_name, $__id__ );
-		$db_name = md5($db_name);
-		$new_id = md5($new_id);
-		$NewJSON = DB_LIBS_FOLDER.$db_name.'/'.md5($__id__).'.json';
-		##########################
-		if(!file_exists($db_url)){echo 'This table (__ID__) dont Exist.';return null;}
-		if(file_exists($NewJSON)){echo 'This table (__ID__) Already Exist.';return null;}
-		$data = file_get_contents( $db_url );
-		file_put_contents($NewJSON, $data);
-		unlink($db_url);
-	}
 /*
 *
 *
@@ -426,12 +404,148 @@ public static function SearchDB( $db_name, $getAll = FALSE, $IsObject = FALSE )
 		$InserData = json_encode( $InserData, JSON_PRETTY_PRINT );
 		file_put_contents($db_url, $InserData);
 	}
+/*
+*
+*
+* 		Update the Db Table
+*		__id__ it is a identifier for DB tables. Need to be unique in each case.
+*		So old_id pint to a specific existing JSON File. New_id create another one.
+*
+*/
 
+	public static function UpdateTableName($db_name, $__id__, $new_id)
+	{
+		##########################
+		self::UpdateContent( $db_name, $__id__, '__id__', $new_id );
+		##########################
+		$db_name = md5($db_name);
+		$__id__ = md5(md5($__id__));
+		$new_id = md5(md5($new_id));
+		$db_url = DB_LIBS_FOLDER.$db_name.'/'.$__id__.'.json';
+		if(!file_exists($db_url)){return null;}
+		$new_url = DB_LIBS_FOLDER.$db_name.'/'.$new_id.'.json';
+		if(file_exists($new_url)){return null;}
+		rename ( $db_url , $new_url );
+		return TRUE;
+		##########################
+	}
 
-
-
-
-
+	public static function CountFiles( $db_name = NULL )
+	{
+		if ($db_name == NULL)
+		{
+			$dirs = array_filter(glob(DB_LIBS_FOLDER.'*'), 'is_dir');
+			$NumberOfFiles = 0;
+			foreach ($dirs as $paths) 
+			{
+				$iterator = new GlobIterator( $paths.'/*.json' );
+				$iterator = $iterator->count();
+				$NumberOfFiles = $iterator + $NumberOfFiles;
+			}
+			return $NumberOfFiles;
+		}
+		$db_name = md5($db_name);
+		$iterator = new GlobIterator(DB_LIBS_FOLDER.$db_name.'/*.json');
+		$NumberOfFiles = $iterator->count();
+		return $NumberOfFiles;
+	}
+	public static function SearchingFor( $coincidences, $string )
+	{
+		##############################
+		if ( empty( $coincidences ) ) {return NULL;}
+		##############################
+		$string = strtolower($string);
+		$tlwr_coincidences= array();
+		foreach ($coincidences as $coincidences) 
+		{
+			$coincidences = strtolower($coincidences);
+			$tlwr_coincidences[] = $coincidences;
+		}
+		foreach ($tlwr_coincidences as $coincidence) 
+		{
+			$result = strpos( ' '.$string, $coincidence );
+			if ( $result == FALSE ){return NULL;}
+		}
+		return TRUE;
+	}
+	public static function Output( $files )
+	{	
+		if (is_array($files))
+		{
+			$GetDataFrom = array();
+			foreach ($files as $json) 
+			{
+				$json = file_get_contents($json);
+				$json = json_decode($json);
+				$GetDataFrom[] = $json;
+			}
+			$JsonData = (object) $GetDataFrom;
+			$JsonData = json_encode($JsonData, FALSE);
+			$JsonData = json_decode($JsonData, FALSE);
+			return $JsonData;
+		}
+		else
+		{
+			$json = $files;
+			$json = file_get_contents($json);
+			$json = json_decode($json, FALSE);
+			return $json;
+		}
+	}
+	public static function GetData( $db_name = NULL, $PagePosition = '0' , $PerPage = '10', $ReturnLimit = FALSE  )
+	{
+		# if we are searching in all Dbs
+		if ($db_name == NULL)
+		{
+			$files = GET::DBs();
+			return $files;
+		}
+		# if we are searching in one specific DB
+		elseif ( $db_name !== NULL )
+		{	
+			$files = GET::DB( $db_name );
+			return $files;
+		}	
+	}
+/*
+*
+*
+* 	Search for an existing data and output his id...
+*
+*
+*
+*/
+	public static function OutputId($db_name, $ItemName, $Data)
+	{
+		#####################
+		$GetData = self::GetData( $db_name );
+		$GetData = self::Output( $GetData );
+		#####################	
+		foreach ($GetData as $GetData) 
+		{	
+			if ( strtolower($GetData->$ItemName) == strtolower($Data) )
+			{
+				return $DataID = $GetData->__id__;
+			}
+		}
+		return FALSE;
+	}
+	public static function SliceData( $PerPage, $CountData )
+	{
+		if( !is_numeric($PerPage )){$PerPage = '10';}
+		$limit = $CountData / $PerPage;
+		if (is_float($limit))
+		{
+			$limit = intval( $limit + 1 );
+		}
+		return $limit;
+	}
+	public static function Paginate( $files, $PerPage, $limit, $PagePosition = '0' )
+	{
+		$PerPage = intval($PerPage);
+		$files = Generate::Pagination( $files, $PagePosition, $PerPage, $limit );
+		return $files;
+	}
 } 	# Cierre de la Clase Database
 	# Inicio de funciones... Genera convenciones para llamar estas clases.
 require_once 'functions.class.php';
