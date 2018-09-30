@@ -21,14 +21,20 @@ Create a Database Easily.
 - Sort the data from new to old and old to new the data.
 - Make backups of your DBs.
 - Have a paginator system to load tables dinamically.
+- Can Delete Database with BackUp System.
 
 ### *New*
-Now MaricutoDB have a simple search engine. *This can overload the server if there are many tables*
+Now MaricutoDB have a simple search engine. 
 
-Can Delete Database with BackUp System.
+> *This can overload the server if there are many tables*
 
-> It is difficult to overload the server with MaricutoDB. *this is not applicable if you use the search engine*
-> MaricutoDB can slice tables to show, with his pagination system. *don't read file by file to get contents if you use this for large content *
+### It is difficult to overload the server with MaricutoDB. 
+
+> *this is not applicable if you use the search engine.*
+
+> MaricutoDB can slice tables to show, with his pagination system. 
+
+*The paginator function eliminate the reading "file by file" to get contents*. this make MaricutoDB a good database manager for many projects, like small blogs, portfolios webpage, and more.
 
 # To check the latest Documentation versions visit:
 
