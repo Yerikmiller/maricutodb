@@ -1,5 +1,6 @@
 
-# MaricutoDB | PHP flat file Database System.
+MaricutoDB | PHP flat file Database System.
+====================
 
 Copyright (c) | Yorman Maricuto 2018 | Yerikmiller@gmail.com
 
@@ -8,27 +9,29 @@ http://maricuto.xyz
 MaricutoDB follow the CRUD System: Create, Read, Update and delete: 
 database, tables, items and his content... all data will be stored in .JSON files.
 
-# MaricutoDB
-Can Create Database Easily.
+MaricutoDB
+---------------------
+Create a Database Easily.
 
-Can Create a strong Security for stored passwords
+- Have a strong system security for stored passwords
+- Read the databases dinamically and with flexibility.
+- Update Content Easily: DB, Tables, Rows (ItemNames) and Colums (ItemContent).
+- Update passwords Easily.
+- Verify if a data in login panel is correct, as passwords and usernames.
+- Sort the data from new to old and old to new the data.
+- Make backups of your DBs.
+- Have a paginator system to load tables dinamically.
 
-Can Read the databases dinamically and with flexibility.
-
-Can Update Content Easily: DB, Tables, Rows (ItemNames) and Colums (ItemContent).
-
-Can Update passwords Easily.
-
-Can Verify if a data in login panel is correct, as passwords and usenames.
-
-Can Sort from new to old and old to new the data.
-
-Can Make backups of your DBs.
+### *New*
+Now MaricutoDB have a simple search engine. *This can overload the server if there are many tables*
 
 Can Delete Database with BackUp System.
+
+> It is difficult to overload the server with MaricutoDB. *this is not applicable if you use the search engine*
+> MaricutoDB can slice tables to show, with his pagination system. *don't read file by file to get contents if you use this for large content *
 
 # To check the latest Documentation versions visit:
 
 http://maricuto.xyz/maricutodb
 
-To start using the Database Just require: "init.php"... in MaricutoDB folder.
+To start using the Database Just *require_once "init.php";* in MaricutoDB folder.
