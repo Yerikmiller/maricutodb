@@ -298,8 +298,8 @@ If we have a panel to login and we need to verify the data that a user send thro
 
 if ( isset( $_POST['UserLogin']) && isset( $_POST['PassLogin']) )
 {
-  $_POST["UserLogin"] = $User;
-  $_POST["PassLogin"] = $Pass;
+  $User = $_POST["UserLogin"];
+  $Pass = $_POST["PassLogin"];
 
   # First We need to use the OuputId Method to search if a user exist
   $id = Database::OutputId( "UsersDB", "nick", $User );
