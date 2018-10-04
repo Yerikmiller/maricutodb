@@ -37,7 +37,6 @@ Table of contents
 4) <a href="#insert-more-data-in-a-created-table">Insert data</a><br>
 5) <a href="#getting-created-data">Getting created data</a><br>
 6) <a href="#getting-a-common-item-from-many-tables">Getting a common item from many tables</a><br>
-7) <a href="#getting-a-common-item-from-many-tables">Getting a unknown table id</a><br>
 8) <a href="#getting-an-unknow-item-id">Getting a unknown table id</a><br>
 9) <a href="#verifying-data-and-passwords">Verifying data and passwords</a><br>
 10) <a href="#paginator">Paginator</a><br>
@@ -48,7 +47,7 @@ Table of contents
 15) <a href="#restore-a-backup">Restore a backup</a><br>
 16) <a href="#license">License</a><br>
 
-MaricutoDB it's a lightweight database manager with flexibility and easy to use. allow create, read, update and delete: database, tables, columns and rows that are saved as a JSON file *(CRUD)*.
+MaricutoDB it's a lightweight database manager with flexibility and easy to use. allow create, read, update and delete: database, tables, columns and rows that are saved as JSON files *(CRUD)*.
 
 Getting Started
 ---------------------
@@ -90,9 +89,9 @@ Now MaricutoDB has a simple search engine.
 You only need one line to create a database and insert data to it, setting four variables.
 
 
-> MaricutoDB::Create( $db_name, $table_id, $item_name, $item_content );
+<strong>MaricutoDB::Create( $db_name, $table_id, $item_name, $item_content );</strong>
 
-> This method can create new data but it's not to update content tables.
+This method can create new data but it's not to update content tables.
 
 | Variable      |  description |
 |---------------|--------------|
@@ -117,8 +116,8 @@ you can add more data to the same table, you only need to be secure to point to 
   # Now let's add a NickName
   MaricutoDB::Create('UsersDB', 'user_n_1', 'nick', 'yerikmiller');
 ```
-### Insert and secured a passwords
-To make it, you only need to set a fifth argument to TRUE
+### Insert and secured passwords
+To make it, you only need to **set a fifth argument to TRUE**
 
 ```php
   # let's add a password
@@ -131,12 +130,12 @@ Getting created data
 ---------------------
 To simply get a table and show an item of it, just use:
 
-> $Get = Database::Table( $db_name, $table_id );
+**$Get = Database::Table( $db_name, $table_id );**
 
 | Variable      |  description |
 |---------------|--------------|
-| $db_name      | a existing or created DB to point |
-| $table_id     | an existing table in the named DB above. |
+| $db_name      | a existing or created Database name to point |
+| $table_id     | an existing table in the named database above. |
 
 ```php
 	
@@ -156,9 +155,9 @@ To simply get a table and show an item of it, just use:
 This function can be useful when we try to get a common item from each DB table. If we have something like 10 products in a DB called **'books'**, each book represent a **_Database Table_** and we can get the **data tables** without calling one by one and without knowledge of each **id table**.
 
 
-> This method only need one argument, the **_db_name_**.
+**This method only need one argument, the _ db_name _.**
 
-> $GetData = Database::GetData( $existing_db_name );
+**$GetData = Database::GetData( $existing_db_name );**
 
 ```php
   # in the example/list-books.php
@@ -176,10 +175,9 @@ This function can be useful when we try to get a common item from each DB table.
 
 Now you can give a layout and style to all data that we are getting from the DB
 
-> The *Database* will give us a **stdClass Object** so, we need to make a foreach to output the data.
+> **The *Database* will give us a **stdClass Object** so, we need to make a foreach to output the data**
 
-
-> for each row we need to use the method _Generate::Row( $GetData, $ItemName, $error = 'N/A' );_
+for each cell we need to use the method _Generate::Row( $GetData, $ItemName, $error = 'N/A' );_ to create new data into a row.
 
 | Variable      |  description |
 |---------------|--------------|
@@ -187,7 +185,7 @@ Now you can give a layout and style to all data that we are getting from the DB
 | $ItemName     | an existing ItemName in the table. |
 | $error        | if the item name don't exists the method will output "N/A" by default you can set whatever string you want |
 
-> _Generate::Row_ method will works like the **$GetData->ItemName** to show specific items. But this method can verify and ouput personalized errors if the item don't exist.
+**_Generate::Row_ method will works like the **$GetData->ItemName** to show specific items. But this method can verify and ouput personalized errors if the item don't exist.**
 
 ```html
   <!-- 
@@ -240,9 +238,9 @@ If we have a Database with three books and their authors the code above will oup
 
 ## Getting an unknow item id
 ---------------------
-MaricutoDB has the method to generate 'RandomString' and use like a RANDOMID to create tables. This is to make the table creations easily, also we don't need to know the *TABLE ID* to Get the Data.
+MaricutoDB has the method to generate 'RandomString' and use it like a **RANDOMID** to create tables. This is to make the table creations easily, also we don't need to know the *TABLE ID* to get Data.
 
-> $RandomString = Generate::RandomString();
+**$RandomString = Generate::RandomString();**
 
 Let's create a **database table** with a random id.
 
@@ -263,14 +261,14 @@ MaricutoDB::Create( 'UsersDB', $RandomString, 'password', 'medinacarlos-1234', T
 
 The code above will create a new table into the database called 'UsersDB' with a random id. We can get the id from another known unique data like a nickname (username), using the *OutputId* method.
 
-> $id = Database::OutputId( $db_name, $item_name, $content );
+**$id = Database::OutputId( $db_name, $item_name, $content );**
 
 
 | Variable      |  description |
 |---------------|--------------|
 | $db_name      | An existing **DB** |
-| $ItemName     | an existing ItemName in each table. |
-| $content      | a unique content like username, nickname, ID, or something like that |
+| $ItemName     | an existing **ItemName** in each table. |
+| $content      | **a unique content** like username, nickname, ID, or something like that |
 
 ```php
 
@@ -403,9 +401,11 @@ MaricutoDB has a simple search engine that can be use to search coincidences whe
 ### How to implement the search engine.
 First we need to create a new page called 'searching' or whatever you want, this is the page where MaricutoDB will make the queries and show the results. (www.example.com/searching)
 
-We need to use the Method 'GetData'. You have some searching database types. You need to select one of them.
+We need to use the Method 'GetData'. Before you need to learn the ways you can use this method. after that you need to select one of them.
 
-> 1) If you want to search in all DBs just leave GetData method without setting any variable
+**1) If you want to search in all DBs just leave GetData method without setting any variable**
+
+this can be usefull when we have something like a blog, and we have many topics, so if we need to get the database tables to show to the user all posts  from all topics without exclusions use this. 
 
 ```php
 
@@ -415,7 +415,9 @@ We need to use the Method 'GetData'. You have some searching database types. You
   $GetData   = Generate::SortingFiles( $GetData, 'new' );
   ########
 ```
-> 2) If you want to search in a specific DB, set the firts argument to that DB name
+
+
+**2) If you want to search in a specific DB, set the firts argument to that DB name**
 
 ```php
 
@@ -426,7 +428,7 @@ We need to use the Method 'GetData'. You have some searching database types. You
   ########
 ```
 
-> 3) If you want to search in two or more DBs set an array into the argument.
+**3) If you want to search in two or more DBs set an array into the argument.**
 
 ```php
 
@@ -437,7 +439,7 @@ We need to use the Method 'GetData'. You have some searching database types. You
   ########
 ```
 
-> 4) If you want to search in all DBs but excluding some of them:
+**4) If you want to search in all DBs but excluding some of them:**
 
 ```php
   # In the searching.php file
@@ -451,7 +453,7 @@ We need to use the Method 'GetData'. You have some searching database types. You
 ```
 
 
-Now we need to show the data with a foreach sentence like above codes when we were trying to show many tables with the method GetData ([Getting a common item from many tables]  (https://github.com/Yerikmiller/maricutodb#getting-a-common-item-from-many-tables)). 
+Now we need to show the data with a foreach sentence like above codes when we were trying to show many tables with the method GetData ( [Getting a common item from many tables](https://github.com/Yerikmiller/maricutodb#getting-a-common-item-from-many-tables) ). 
 
 The difference here is that only will appear when a *'$_GET'* variable is set, for example *'$_GET['query']'*. This variable will be set when the user request something in the search engine.
 
