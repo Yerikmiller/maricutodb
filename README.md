@@ -27,6 +27,9 @@
   <br>
   <a href="http://maricuto.xyz">author website of the project</a>
 </p>
+<h2>Latest Documentation</h2>
+<a href="http://maricuto.xyz/maricutodb?lang=es">Latest Documentation: Español</a><br>
+<a href="http://maricuto.xyz/maricutodb?lang=en">Latest Documentation: English</a><br>
 
 Table of contents
 ---------------------
