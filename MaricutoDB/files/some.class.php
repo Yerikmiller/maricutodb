@@ -111,20 +111,11 @@ Class Generate
 	}
 	public static function query( $query_array )
 	{
-		$query_array = preg_replace('/[^\p{L}\p{N}\s]/u', '', $query_array);
-		$query_array = trim($query_array);
-		$specials = array('á','é','í','ó','ú', '  ');
-		$i = 0;
-		foreach ($specials as $specials) 
-		{
-			$i++;
-			if ( $i == 1){$replace = 'a';}
-			if ( $i == 2){$replace = 'e';}
-			if ( $i == 3){$replace = 'i';}
-			if ( $i == 4){$replace = 'o';}
-			if ( $i == 5){$replace = 'u';}
-			$query_array = str_replace($specials, $replace, $query_array);
-		}
+		$query_array = str_replace('á', 'a', $query_array);
+		$query_array = str_replace('é', 'e', $query_array);
+		$query_array = str_replace('í', 'i', $query_array);
+		$query_array = str_replace('ó', 'o', $query_array);
+		$query_array = str_replace('ú', 'u', $query_array);
 		$query_array = explode(' ', $query_array);
 		return $query_array;
 	}

@@ -462,7 +462,12 @@ public static function SearchDB( $db_name, $getAll = FALSE, $IsObject = FALSE )
 			$tlwr_coincidences[] = $coincidences;
 		}
 		foreach ($tlwr_coincidences as $coincidence) 
-		{
+		{		
+			$string = str_replace('á', 'a', $string);
+			$string = str_replace('é', 'e', $string);
+			$string = str_replace('í', 'i', $string);
+			$string = str_replace('ó', 'o', $string);
+			$string = str_replace('ú', 'u', $string);
 			$result = strpos( ' '.$string, $coincidence );
 			if ( $result == FALSE ){return NULL;}
 		}
@@ -545,6 +550,42 @@ public static function SearchDB( $db_name, $getAll = FALSE, $IsObject = FALSE )
 		$PerPage = intval($PerPage);
 		$files = Generate::Pagination( $files, $PagePosition, $PerPage, $limit );
 		return $files;
+	}
+	public static function SortingData( $GetData, $content, $sortby = 'asc' )
+	{
+		$sorting = array();
+		foreach( $GetData as $key => $value )
+		{
+			$Get = Database::Output( $value );
+			$sorting[$value] = $Get->$content;	
+		}
+		if ( $sortby == 'desc'){arsort($sorting);}
+		if ( $sortby == 'asc'){asort($sorting);}
+		$sorted = array();
+		foreach ($sorting as $key => $value) 
+		{
+			$sorted[] = $key;
+		}
+		return $sorted;
+	}
+	public static function SearchEngine( $GetData, $QueryArray )
+	{
+		$paths = array();
+		foreach ($GetData as $key => $GetData) 
+		{
+			$Data = Database::Output( $GetData );
+			foreach ($Data as $key => $Searching) 
+			{
+				$ParseQuery = self::SearchingFor( $QueryArray, $Searching );
+				if( $ParseQuery == TRUE )
+				{ 
+					$paths[] = $GetData;
+					break;
+				}
+			}
+		}
+		if (empty($paths)){return NULL;}
+		return $paths;		
 	}
 } 	# Cierre de la Clase Database
 	# Inicio de funciones... Genera convenciones para llamar estas clases.
