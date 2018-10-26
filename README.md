@@ -44,6 +44,7 @@ Table of contents
 9) <a href="#verifying-data-and-passwords">Verifying data and passwords</a><br>
 10) <a href="#paginator">Paginator</a><br>
 11) <a href="#search-engine">Search Engine</a><br>
+11) <a href="#sorting-data">Ways to sort data</a><br>
 12) <a href="#update-database">Update Database</a><br>
 13) <a href="#backups">Backups</a><br>
 14) <a href="#delete-data">Delete data</a><br>
@@ -72,6 +73,7 @@ MaricutoDB | Features
 - Update passwords Easily.
 - Verify data in login panel as passwords and usernames.
 - Sort the data from new to old and old to new.
+- Sort the data in a alphabetical and numerical way.
 - Make backups of your DBs.
 - Have a paginator system to load tables dinamically.
 - Can Delete Database with BackUp System.
@@ -79,11 +81,6 @@ MaricutoDB | Features
 New Feataures | added at 2018/09/30
 ---------------------
 Now MaricutoDB has a simple search engine. 
-
-> *This can overload the server if there are many tables*
-
-*The paginator function eliminate the reading of all files to get contents* and only read that will appear per page. This make MaricutoDB a good database manager for many projects like blogs, portfolios, gallery images webpage and more.
-
 
 ## How to use
 ---------------------
@@ -466,42 +463,64 @@ MaricutoDB will search something in each table, if there is a coincidence with t
 ```php
       # this code will need to be in the same .php file, like above.
       # In the searching.php file
+# Options
+#########################
+$Pagination = TRUE;
+$sortby = "new";
+$PaginatorName = "pages"; 
+$GLOBALS["PerPage"] = "10";
+$NextText = "Next";
+$PreviusText = "Previus";
+$NavigationNumbers = "5";
+#########################
 
-      if ( isset($_GET['query']) )
-      {
-          # written words by user convert as array to search in the DB
-          #########################
-          $QueryArray = Generate::query( $_GET['query'] );
-          #########################
-          $error = 'Nothing found.';
-          foreach ($GetData as $Get ) 
-          {                         
-              # Decode and output data json.
-              $Get = Database::Output( $Get );
-              #########################
-              # Searching for coincidences
-              foreach ($Get as $search) 
-              {
-                  $ParseQuerie = Database::SearchingFor( $QueryArray, $search );
-                  if ( $ParseQuerie == TRUE ){break;}                  
-              }
-              if ( $ParseQuerie == TRUE )
-              {
-                # Error to false and will not show.
-                # because they are a coincidence
-                $error = FALSE;
 
-                # ParseQuerie is TRUE so, show this.
-                # Layout: here you can set your HTML
-                echo 'Hi, my name is '.Generate::Row($Get, 'name', $error = 'unknown').'and my Lastname is '.Generate::Row($Get, 'lastname', $error = 'unknown').'<br>';
-              }
-          }
-          if ( $error !== FALSE )
-          {
-            # if there are not coicidences show error.
-            echo $error;
-          }
-      }
+if( isset($_GET["query"]) )
+{
+	#########################
+	# Getting
+	$GetData = Database::GetData( "UsersDB" );
+	# Sorting
+	$GetData = Generate::SortingFiles( $GetData, "new" );
+	#########################
+	# Creating an array with the words sent.
+	$QueryArray = Generate::query( $_GET["query"] );
+	#########################
+	# Searching
+	$GetData = Database::SearchEngine( $GetData, $QueryArray );
+	
+	# If there is not any coincidence return NULL
+	if( $GetData == NULL )
+	{
+	  echo "Nothing found, try with another words.";
+	} else{
+	# Executing paginator
+	# Just copy and paste
+	  #########################
+	  $GLOBALS["CountData"] = count($GetData);
+	  $limit = Database::SliceData( $GLOBALS["PerPage"], $GLOBALS["CountData"] );
+	  $Paginator = Generate::Paginator( $PaginatorName );
+	  $GetData = Database::Paginate( $GetData, $GLOBALS["PerPage"], $limit, $Paginator );
+	  #########################
+	  # applying the layout to the tables with coincidences.
+	  # Remember, this will ony applicable for the tables with coincidences.
+	  # You can give a layout to each table through a foreach.
+
+	  foreach( $GetData as $Get )
+	  {
+	  	$output  = "This is my name ";
+	   	$output .= Generate::Row($Get, "name", "N/A");
+		$output .= "<br>";
+		echo $output;
+	  }
+	}
+	# This will show the navigation buttons.
+	# JUST IF THERE ARE COINCIDENCES
+	if( $GetData !== NULL )
+	{
+	  Write::PaginatorButtons( $limit, $PaginatorName, $NavigationNumbers, $Paginator, $PreviusText, $NextText );
+	}
+}
 ```
 
 Let's create the input form for the search engine. This can be place whatever you want. You need to place where the form will make the searching in the **action attr**, in this case in 'searching' page.
@@ -513,9 +532,41 @@ Let's create the input form for the search engine. This can be place whatever yo
 <form action="http://www.example.com/searching" method="GET">
   <input type="text" name="query" placeholder="Search">
 </form>
-
-
 ```
+Sorting Data
+--------------------
+If we have something like a database with products, we can get his data and sort by his product number in a ascending or descending way. We need to see this part of the tutorial to understand how is the <a href="#getting-a-common-item-from-many-tables">standard method to sorting data</a>. In that case we just use the SortingFiles method to sort data from new to old and viceversa.
+
+In this case let's use the **SortingData** method, it will allow to us sort data **in an alphabetic and numerical** way. 
+
+Let's to select one database or many of them, selecting some of the four ways to getting data and from there use the property "SortingData".
+
+```php
+# Getting
+$GetData = Database::GetData( "Productos" );
+# Sorting
+# In this case we will sort by his product ref.
+# So, we need to have a item "KEY" with that in each table
+# ex: P0001, P0002, P0003, etc...
+
+# The third argument it's the way to sorting, "asc" or "desc"
+
+$GetData = Database::SortingData( $GetData, "prod_ref", "desc" );
+```
+it depends on the data we have on our tables (from a database previusly created). now we can sort the data by product name or whatever item they have.
+
+```php
+# Getting
+$GetData = Database::GetData( "Productos" );
+# Sorting
+$GetData = Database::SortingData( $GetData, "prod_name", "asc" );
+```
+| Variable      |  description |
+|---------------|--------------|
+| $GetData      | Data obtained by the GetData Method. |
+| $item_name     | Common item between tables to be sort |
+| $sortby      | To show data in ascending or descending way. Options: "asc" and "desc" |
+
 
 Update Database
 ---------------------
