@@ -60,6 +60,21 @@ Timezone is used to created json files and time fields.
   $GLOBALS['timezone'] = 'America/Caracas'; // change this to whatever you want.
 ```
 
+##### You're ready to start
+##### Basic Example
+```php
+  $mdb = new mdb();
+  $user = $mdb->documents("users")->create("user_1", [
+    "name" => "Louis"
+  ]);
+  
+  var_dump($user);
+  
+  $users = $mdb->documents("users")->get()->all();
+  
+  var_dump($users);
+```
+
 New Feataures | added at 2021-10-15
 ---------------------
 - New methods to learn easily.
