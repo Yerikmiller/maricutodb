@@ -56,15 +56,15 @@ The where() method uses three parameters: a field to filter, a compare operation
 
 operators for where() method
 
-`<` less than
-`<=` less than or equal to
-`==` same as
-`>`  greater than
-`==` equal to
-`===` equal to (comparing value and type)
-`! =` not equal to
-`in` contains the string in field
-`not-in` not contains the string in field
+`<` less than <br>
+`<=` less than or equal to <br>
+`==` same as <br>
+`>`  greater than <br>
+`==` equal to <br>
+`===` equal to (comparing value and type) <br>
+`! =` not equal to <br>
+`in` contains the string in field <br>
+`not-in` not contains the string in field <br>
 
 ### Get by field | $mdb->documents->get_by()
 | Variable      |  description |
