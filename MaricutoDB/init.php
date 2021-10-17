@@ -46,7 +46,7 @@ if(file_exists(MDB_AUTOLOAD)){
 
 define('typeOfHash', 'md5'); # define a type of hash
 # LIST OF VALID TIMEZONES http://php.net/manual/es/timezones.php
-$GLOBALS['backupfolder'] = dirname(DB_LIBS_FOLDER).'/backups/';
+$GLOBALS['backupfolder'] = dirname(DB_LIBS_FOLDER).'/backup/';
 if (!isset($GLOBALS['timezone'])) {
 	$GLOBALS['timezone'] = 'America/Caracas';
 }
