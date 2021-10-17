@@ -1,53 +1,41 @@
 <?php
-
 #########################################
 # MaricutoDB
 # Copyright (c) | Yorman Maricuto 2018 |
-# Yerikmiller@gmail.com
-# http://maricuto.site90.com
-# 
+# Github: Yerikmiller
+# http://maricuto.website
 #
-# This follow the CRUD System: Create, Read, Update and delete: 
-# database, table, items and content...
-#
-# MaricutoDB
-# Can Create Database Easily.
-# Can Create Hashes with Strong Security to store passwords.
-# Can Read the databases dinamically and with flexibility.
-# Can Update Content Easily: DB, Tables, Rows (ItemNames) and Colums (ItemContent).
-# Can Update passwords Easily.
-# Can Verify if a data in login panel is correct, as passwords and usenames.
-# Can Sort from new to old and old to new the data.
-# Can Make backups of your DBs.
-# Can Delete Database with BackUp System.
+# MaricutoDB | MDB
+# Create, Read, Update, Delete (CRUD)
+# Create collections of databases like 'firebase system'
+# each collection will represent a single json file or a group of them
 #########################################
 
 Class Generate
 {
-	public static function RandomString($length = 10)
+	public static function RandomString($length = 10, $RandomLenght = TRUE, $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-')
 	{
-	if($length < 7 || $length > 30){$length = 10;}
-	$random_lenght = mt_rand(1, 4);
+		if($length < 2 || $length > 32){$length = 10;}
+		$random_lenght = mt_rand(1, 4);
 
-	if ($random_lenght       == 1) {
-		$random_number = 0;
-	} elseif ($random_lenght == 2) {
-		$random_number = 2;
-	} elseif ($random_lenght == 3) {
-		$random_number = 3;
-	}
-	 elseif ($random_lenght  == 4) {
-		$random_number = 4;
-	}
-
-    $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    $charactersLength = strlen($characters);
-    $randomString = '';
-    for ($i = $random_number; $i < $length; $i++) 
-	    {
-	   	 $randomString .= $characters[rand(0, $charactersLength - 1)];
-	    }
-	return $randomString;
+		if ($random_lenght       == 1) {
+			$random_number = 0;
+		} elseif ($random_lenght == 2) {
+			$random_number = 2;
+		} elseif ($random_lenght == 3) {
+			$random_number = 3;
+		}
+		 elseif ($random_lenght  == 4) {
+			$random_number = 4;
+		}
+		if($RandomLenght == FALSE){$random_number = 0;}
+	    $charactersLength = strlen($characters);
+	    $randomString = '';
+	    for ($i = $random_number; $i < $length; $i++) 
+		    {
+		   	 $randomString .= $characters[rand(0, $charactersLength - 1)];
+		    }
+		return $randomString;
 	}
 
 
@@ -91,11 +79,17 @@ Class Generate
 		} else{$PagePosition = 0;}
 		return $PagePosition;
 	}
-	public static function Paginator( $PaginatorName )
+	public static function Paginator( $PaginatorName, $method = 'POST' )
 	{
-		if (isset($_POST[$PaginatorName])){
-			return $PagePosition = self::PagePosition( $_POST[$PaginatorName] );
-		} else{return $PagePosition = 0;}
+		if($method == 'GET'){
+			if (isset($_GET[$PaginatorName])){
+				return $PagePosition = self::PagePosition( $_GET[$PaginatorName] );
+			} else{return $PagePosition = 0;}
+		}else{
+			if (isset($_POST[$PaginatorName])){
+				return $PagePosition = self::PagePosition( $_POST[$PaginatorName] );
+			} else{return $PagePosition = 0;}
+		}
 	}
 	public static function Row( $Get, $data, $output = 'N/A' )
 	{
@@ -119,6 +113,16 @@ Class Generate
 		$query_array = explode(' ', $query_array);
 		return $query_array;
 	}
+	public static function hash( $string )
+	{
+		# 'typeOfHash' it's on "init.php"
+		# can be: md5, SHA1, etc...
+		$hash = hash( typeOfHash, $string);
+		if($hash == FALSE){return FALSE;exit();}
+		else{
+			return $hash;
+		}
+	}
 }
 
 
@@ -130,9 +134,9 @@ class FindFile
 {
 	public static function JSON( $db_name, $__id__ )
 	{
-		$__id__ = md5($__id__);
-		$db_name = md5($db_name);
-		$JSON = DB_LIBS_FOLDER.$db_name.'/'.md5($__id__).'.json';
+		$__id__ = Generate::hash($__id__);
+		$db_name = Generate::hash($db_name);
+		$JSON = DB_LIBS_FOLDER.$db_name.'/'.Generate::hash($__id__).'.json';
 		return $JSON;
 	}
 } 
@@ -159,7 +163,7 @@ class Search
 	public static function DB( $db_name )
 	{
 		$db_folder = $db_name;
-		$db_folder = md5($db_folder);
+		$db_folder = Generate::hash($db_folder);
 		if(file_exists(DB_LIBS_FOLDER.$db_folder)){
 			return TRUE;
 		}   return;
@@ -237,7 +241,7 @@ class GET
 	}
 	public static function OnlyOneDB( $db_name )
 	{
-		$db_name = md5($db_name);
+		$db_name = Generate::hash($db_name);
 		if (!file_exists( DB_LIBS_FOLDER.$db_name )){return FALSE;}
 		$files = glob(DB_LIBS_FOLDER.$db_name."/*.json");
 		return $files;
@@ -255,7 +259,7 @@ class GET
 			$each_db = array(); # variable para almacenar rutas en arrays separados..
 			foreach ( $db_names as $db_name) 
 			{
-				$db_name = md5($db_name);
+				$db_name = Generate::hash($db_name);
 				if (!file_exists( DB_LIBS_FOLDER.$db_name ))
 				{/* No hacer nada si un DB no existe y seguir con el loop.*/}
 				else
@@ -326,7 +330,7 @@ class DELETE
 *
 */
 
-	public static function Table( $db_name, $__id__ )
+	public static function Table( $db_name, $__id__  )
 	{
 		$db_url = FindFile::JSON( $db_name, $__id__ );
 		if (!file_exists($db_url)){return null;}
@@ -348,13 +352,12 @@ class DELETE
 	{
 		#################
 		$DatabaseListed = $db_name;
-		$db_name = md5($db_name);
+		$db_name = Generate::hash($db_name);
 		$db_folder_name = DB_LIBS_FOLDER.$db_name;
 		$files = glob($db_folder_name."/*.json");
 		#################
 		$get = Decode::DBList();
 		$DeleteDBListed = $get;
-		$log_DB = DB_LIBS_FOLDER.'db_list.json';
 		$MakeBackup = $GLOBALS['backupfolder'].$db_name;
 		#################
 		if(!file_exists($db_folder_name)){return null;}
@@ -390,7 +393,6 @@ class DELETE
 		# Eliminate Item (listed DB in JSON file)
 		unset($DeleteDBListed->$DatabaseListed);
 		$DeleteDBListed = json_encode( $DeleteDBListed, JSON_PRETTY_PRINT );
-		file_put_contents($log_DB, $DeleteDBListed);
 	}
 
 }
@@ -401,7 +403,7 @@ class Backup
 	public static function DB( $db_name )
 	{
 		##################################
-		$db_name = md5($db_name);
+		$db_name = Generate::hash($db_name);
 		$db_folder_name = DB_LIBS_FOLDER.$db_name;
 		$files = glob($db_folder_name."/*.json");
 		$MakeBackup = $GLOBALS['backupfolder'].$db_name;
@@ -425,7 +427,7 @@ class Restore
 	public static function DB( $db_name )
 	{
 		##################################
-		$db_name = md5($db_name);
+		$db_name = Generate::hash($db_name);
 		$db_folder_name = DB_LIBS_FOLDER.$db_name;
 		$BackupFolder = $GLOBALS['backupfolder'].$db_name;
 		$files = glob($BackupFolder."/*.json");

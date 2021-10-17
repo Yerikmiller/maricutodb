@@ -2,23 +2,13 @@
 #########################################
 # MaricutoDB
 # Copyright (c) | Yorman Maricuto 2018 |
-# Yerikmiller@gmail.com
-# http://maricuto.site90.com
-# 
+# Github: Yerikmiller
+# http://maricuto.website
 #
-# This follow the CRUD System: Create, Read, Update and delete: 
-# database, table, items and content...
-#
-# MaricutoDB
-# Can Create Database Easily.
-# Can Create Hashes with Strong Security to store passwords.
-# Can Read the databases dinamically and with flexibility.
-# Can Update Content Easily: DB, Tables, Rows (ItemNames) and Colums (ItemContent).
-# Can Update passwords Easily.
-# Can Verify if a data in login panel is correct, as passwords and usenames.
-# Can Sort from new to old and old to new the data.
-# Can Make backups of your DBs.
-# Can Delete Database with BackUp System.
+# MaricutoDB | MDB
+# Create, Read, Update, Delete (CRUD)
+# Create collections of databases like 'firebase system'
+# each collection will represent a single json file or a group of them
 #########################################
 
 class Write
@@ -54,7 +44,9 @@ class Write
 	 	$Navigation = '5',
 	 	$PagePosition,
 	 	$Previus = 'Previus',
-	 	$Next = 'Next' )
+	 	$Next = 'Next',
+	 	$method = 'POST'
+	 	)
 	{
 		$NavigationNumbers = Write::NavigationNumbers($limit, $Navigation,
 		$PagePosition, $PaginatorName);
@@ -99,12 +91,13 @@ class Write
 			$DisabledButtonPrevius = '';
 			$DisabledButtonNext = 'disabled="TRUE"';
 		}
-		if ( $GLOBALS['PerPage'] > $GLOBALS['CountData'] ){return NULL;}
+		if ( $GLOBALS['PerPage'] >= $GLOBALS['CountData'] ){return NULL;}
 			
 
+		if($method == 'GET'){$method = 'GET';}else{$method = 'POST';}
 
 
-		$FormStart = '<form method="POST" action="http://'.$ACTUAL_LINK.'#'.$PaginatorName.'">';
+		$FormStart = '<form method="'.$method.'" action="http://'.ACTUAL_LINK.'#'.$PaginatorName.'">';
 		$PreviusButton = '<button '.$DisabledButtonPrevius.' type="submit" class="MDBButtons" id="MDBprevius" value="'.$ToPreviusPage.'" name="'.$PaginatorName.'">'.$Previus.'</button>';
 		$NextButton = '<button '.$DisabledButtonNext.' type="submit" class="MDBButtons" id="MDBNext" value="'.$ToNextPage.'" name="'.$PaginatorName.'">'.$Next.'</button>';
 		$FormEnd = '</form>';
@@ -169,7 +162,7 @@ class Write
 			echo $FormEnd;
 		}
 		# elseif ($PagePosition > $limit){
-		# 	header('Location: http://'.dirname($ACTUAL_LINK));
+		# 	header('Location: http://'.dirname(ACTUAL_LINK));
 		# }
 	}
 }

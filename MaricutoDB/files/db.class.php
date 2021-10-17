@@ -2,24 +2,16 @@
 #########################################
 # MaricutoDB
 # Copyright (c) | Yorman Maricuto 2018 |
-# Yerikmiller@gmail.com
-# http://maricuto.site90.com
-# 
+# Github: Yerikmiller
+# http://maricuto.website
 #
-# This follow the CRUD System: Create, Read, Update and delete: 
-# database, table, items and content...
-#
-# MaricutoDB
-# Can Create Database Easily.
-# Can Create Hashes with Strong Security to store passwords.
-# Can Read the databases dinamically and with flexibility.
-# Can Update Content Easily: DB, Tables, Rows (ItemNames) and Colums (ItemContent).
-# Can Update passwords Easily.
-# Can Verify if a data in login panel is correct, as passwords and usenames.
-# Can Sort from new to old and old to new the data.
-# Can Make backups of your DBs.
-# Can Delete Database with BackUp System.
+# MaricutoDB | MDB
+# Create, Read, Update, Delete (CRUD)
+# Create collections of databases like 'firebase system'
+# each collection will represent a single json file or a group of them
 #########################################
+
+use function PHPSTORM_META\type;
 
 require_once 'some.class.php';
 require_once 'write.class.php';
@@ -34,6 +26,16 @@ require_once 'write.class.php';
 
 class Database
 {
+	public static function strNoAccent($str)
+	{
+		if(!is_string($str)){return FALSE;}
+		$str = str_replace('á', 'a', $str);
+		$str = str_replace('é', 'e', $str);
+		$str = str_replace('í', 'i', $str);
+		$str = str_replace('ó', 'o', $str);
+		$str = str_replace('ú', 'u', $str);
+		return $str;
+	}
 
 /*
 *
@@ -49,13 +51,49 @@ class Database
 		#########################
 		$db_encrypted = $db_name;
 		$NewDBInsert = $db_encrypted;
-		$db_name = md5($db_name);
+		$db_name = Generate::hash($db_name);
 		$time = GET::TIME( $GLOBALS['timezone'] );
 		##########################
 		if(!file_exists(DB_LIBS_FOLDER.$db_name)){
-			mkdir(DB_LIBS_FOLDER.$db_name, 0600);}
-		file_put_contents(DB_LIBS_FOLDER.$db_name.'/.htacces', 'Options -Indexes');		
+			mkdir(DB_LIBS_FOLDER.$db_name, 0755);}
+		file_put_contents(DB_LIBS_FOLDER.$db_name.'/.htaccess', 'Options -Indexes');		
 		return TRUE;
+	}
+
+
+	public static function getInvalidActions()
+	{
+		return ["onblur","oncanplay","oncanplaythrough","onchange","onclick","oncontextmenu","oncopy","oncut","ondblclick","ondrag","ondragend","ondragenter","ondragleave","ondragover","ondragstart","ondrop","ondurationchange","onended","onerror","onfocus","onfocusin","onfocusout","onfullscreenchange","onfullscreenerror","onhashchange","oninput","oninvalid","onkeydown","onkeypress","onkeyup","onload","onloadeddata","onloadedmetadata","onloadstart","onmousedown","onmouseenter","onmouseleave","onmousemove","onmouseover","onmouseout","onmouseup","onresize","onreset","onscroll","onsearch","onseeked","onseeking","onselect","onshow","onsubmit","onsuspend","ontoggle","ontouchcancel","ontouchend","ontouchmove","ontouchstart","ontransitionend","onunload","onvolumechange","onwaiting","onwheel","onaltKey","onaltKey","onanimationName","onbubbles","onbutton","onbuttons","oncancelable","oncharCode","ondata","ondefaultPrevented","javascript:"];
+	}
+
+	public static function replaceAllInvalids($string)
+	{
+		$null = "-avoid-xss-";
+		$invalids = self::getInvalidActions();
+		$pattern = implode("|", $invalids);
+		$pattern = "/$pattern/i";
+		
+		####
+		# $string = preg_split($pattern, $string);
+		# $string = implode("--", $string);
+		####
+		$string = preg_replace($pattern, "-", $string);
+		return $string;
+	}
+
+	public static function securityParseText($string)
+	{
+
+		$null = "-avoid-xss-";
+
+
+		$string = str_replace("<", "&lt;", $string);
+		$string = str_replace(">", "&gt;", $string);
+		$string = str_replace("javascript:", $null, $string);
+
+		# $string = self::replaceAllInvalids($string);
+
+	    return $string;
 	}
 
 /*
@@ -73,17 +111,23 @@ class Database
 		if(file_exists(DB_LIBS_FOLDER.$db_name)){return null;}
 		else{self::CreateFolderDB( $db_name );}
 		$time = GET::TIME( $GLOBALS['timezone'] );
+		$unixTime = time(); # only Unix Time
 		########################
 		$db_url = FindFile::JSON($db_name, $__id__);
-		if(file_exists($db_url)){return null;}
+		if(file_exists($db_url)){return NULL;}
 		###
 		$put_data  =  "{" . PHP_EOL;
 		$put_data .= 	'"CreationDate": ' .'"'. $time .'",'. PHP_EOL;
+		$put_data .= 	'"time": ' .'"'. $unixTime .'",'. PHP_EOL;
 		$put_data .= 	'"FromDB": ' .'"'. $db_name .'",'. PHP_EOL;
 		$put_data .= 	'"__id__": ' .'"'. $__id__ .'"'. PHP_EOL;
 		$put_data .=  "}" . PHP_EOL;
 		###
 		file_put_contents($db_url, $put_data);
+
+		
+		# create cache file on create...
+		self::createCacheFileOnUpdate($db_url, $db_name);
 	}
 
 
@@ -97,26 +141,69 @@ class Database
 */
 	public static function InsertData( $db_name, $__id__, $ItemName, $Content, $Ispassword = FALSE )
 	{
-
+		try {
+			$Content = self::securityParseText($Content);
+		} catch (Exception $e) {
+			throw new Exception($e, 1);
+		}
 		$db_url = FindFile::JSON( $db_name, $__id__ );
 		$get = SearchDecodeAndConvert::JSON( $db_name, $__id__ );
 		//
-		$InserData = $get;
+		$InsertData = $get;
 		//
-		if (!isset($InserData->$ItemName))
-		{
-			$InserData->$ItemName = "$Content";
-			# Codificar el contenido
-			if ($Ispassword == TRUE)
-			{
-				$InserData->$ItemName = password_hash($InserData->$ItemName, PASSWORD_DEFAULT);
+		if($Content !== "MDB__MULTIPLE_FIELDS__MDB" && !is_array($ItemName)){
+			if(isset($InsertData->$ItemName)){
+				return NULL;
 			}
-
-			$InserData = (array) $InserData;
-			$InserData = json_encode( $InserData, JSON_PRETTY_PRINT );
-			file_put_contents($db_url, $InserData);
 		}
 
+		if($Content == "MDB__MULTIPLE_FIELDS__MDB" && is_array($ItemName)){
+			$items = $ItemName;
+			foreach ($items as $name => $value) {
+				// contine if already exists.
+				if(isset($InsertData->$name)){ continue; }
+
+				if(is_array($value) || is_object($value)){
+					$value = json_encode($value, TRUE);
+					try {
+						$value = Database::securityParseText($value);
+					} catch (Exception $e) {
+						throw new Exception($e, 1);
+					}
+				}
+
+				try {
+					$value = Database::securityParseText($value);
+				} catch (Exception $e) {
+					throw new Exception($e, 1);
+				}
+
+				if ($Ispassword == TRUE){
+					$InsertData->$name = password_hash($value, PASSWORD_DEFAULT);
+					continue;
+				}
+				$InsertData->$name = $value;				
+			}
+		}else{
+			if(is_array($Content) || is_object($Content)){
+				$InsertData->$ItemName = json_encode($Content, TRUE);
+			}else{
+				$InsertData->$ItemName = $Content;
+				try {
+					$InsertData->$ItemName = Database::securityParseText($InsertData->$ItemName);
+				} catch (Exception $e) {
+					throw new Exception($e, 1);
+				}
+			}			
+			if ($Ispassword == TRUE){
+				$InsertData->$ItemName = password_hash($InsertData->$ItemName, PASSWORD_DEFAULT);
+			}
+		}
+		$InsertData = (array) $InsertData;
+		$InsertData = json_encode( $InsertData, JSON_PRETTY_PRINT );
+
+		file_put_contents($db_url, $InsertData);
+		return TRUE;
 	}
 
 
@@ -133,7 +220,7 @@ class Database
 public static function SearchDB( $db_name, $getAll = FALSE, $IsObject = FALSE )
 {
 	####################
-	$db_name = md5($db_name);
+	$db_name = Generate::hash($db_name);
 	#############
 	if(!file_exists(DB_LIBS_FOLDER.$db_name)){echo 'Database dont exist';return null;}
 	foreach(glob(DB_LIBS_FOLDER.$db_name."/*") as $JSONFiles) 
@@ -245,7 +332,7 @@ public static function SearchDB( $db_name, $getAll = FALSE, $IsObject = FALSE )
 *	layout, setting the third argument as TRUE.
 */
 
-	public static function Table( $db_name, $__id__, $Show = FALSE)
+	public static function Table( $db_name, $__id__ )
 	{
 		#####################
 		$db_url = FindFile::JSON( $db_name, $__id__ );
@@ -254,15 +341,6 @@ public static function SearchDB( $db_name, $getAll = FALSE, $IsObject = FALSE )
 		$data = file_get_contents( $db_url );
 		$get = json_decode( $data, true );
 		$get = (object) $get;
-		if ($Show == TRUE)
-		{
-			foreach ($get as $get => $value) 
-			{
-				echo($get).' | ';
-				echo($value).'<br>';
-				
-			}
-		}
 		return $get;
 	}
 
@@ -338,8 +416,8 @@ public static function SearchDB( $db_name, $getAll = FALSE, $IsObject = FALSE )
 	{
 		
 		#################
-		$db_name = md5($db_name);
-		$NewDBName = md5($NewDBName);
+		$db_name = Generate::hash($db_name);
+		$NewDBName = Generate::hash($NewDBName);
 		$new = DB_LIBS_FOLDER.$NewDBName;
 		$old = DB_LIBS_FOLDER.$db_name;
 		$files = glob($old."/*.json");
@@ -348,7 +426,7 @@ public static function SearchDB( $db_name, $getAll = FALSE, $IsObject = FALSE )
 		if(!file_exists($old)){echo 'The database that you are trying to change his name dont exist.';return null;}
 		if(file_exists($new)){echo 'This Database Already Exist, try Another.';return null;}
 		#################
-			mkdir($new, 0600);
+			mkdir($new, 0755);
 			foreach ($files as $paths) 
 			{
 				$just_name = basename($paths);
@@ -385,24 +463,154 @@ public static function SearchDB( $db_name, $getAll = FALSE, $IsObject = FALSE )
 *
 *
 */
-
 	public static function UpdateContent( $db_name, $__id__, $ItemName, $Content, $Ispassword = FALSE )
 	{
+		try {
+			$Content = self::securityParseText($Content);
+		} catch (Exception $e) {
+			throw new Exception($e, 1);
+		}
 		$db_url = FindFile::JSON( $db_name, $__id__ );
-		if(!file_exists($db_url)){return null;}
+		if(!file_exists($db_url)){return NULL;}
 		$get = SearchDecodeAndConvert::JSON( $db_name, $__id__ );
-		//
-		$InserData = $get;
-		//
-		$InserData->$ItemName = "$Content";
-		# Codificar el contenido
-		if ($Ispassword == TRUE)
-			{
-				$InserData->$ItemName = password_hash($InserData->$ItemName, PASSWORD_DEFAULT);
+		if($get == NULL){return NULL;}
+
+		$InsertData = $get;
+
+
+		if($Content == "MDB__MULTIPLE_FIELDS__MDB" && is_array($ItemName)){
+			$items = $ItemName;			
+			foreach ($items as $name => $value) {
+				if(is_array($value) || is_object($value)){
+					$value = json_encode($value, TRUE);
+					try {
+						$value = Database::securityParseText($value);
+					} catch (Exception $e) {
+						throw new Exception($e, 1);
+					}
+				}
+				try {
+					$value = Database::securityParseText($value);
+				} catch (Exception $e) {
+					throw new Exception($e, 1);
+				}				
+				if ($Ispassword == TRUE){
+					$InsertData->$name = password_hash($value, PASSWORD_DEFAULT);
+					continue;
+				}
+				$InsertData->$name = $value;
 			}
-		$InserData = (array) $InserData;
-		$InserData = json_encode( $InserData, JSON_PRETTY_PRINT );
-		file_put_contents($db_url, $InserData);
+		}else{
+			if(is_array($Content) || is_object($Content)){
+				$InsertData->$ItemName = json_encode($Content, TRUE);				
+				try {
+					$InsertData->$ItemName = Database::securityParseText($InsertData->$ItemName);
+				} catch (Exception $e) {
+					throw new Exception($e, 1);
+				}
+			}else{
+				$InsertData->$ItemName = $Content;
+				try {
+					$InsertData->$ItemName = Database::securityParseText($InsertData->$ItemName);
+				} catch (Exception $e) {
+					throw new Exception($e, 1);
+				}
+			}
+			# Codificar el contenido
+			if ($Ispassword == TRUE)
+			{
+				$InsertData->$ItemName = password_hash($InsertData->$ItemName, PASSWORD_DEFAULT);
+			}
+		}
+
+		$InsertData = (array) $InsertData;
+		$InsertData = json_encode( $InsertData, JSON_PRETTY_PRINT );
+		######## temp ########
+		$temp_file = basename($db_url);
+		### Generating temp file
+		$extTemp = '.tmp';
+		$tempFolder = DB_TEMP_FOLDER.Generate::hash($db_name);
+		$tempPath = $tempFolder.'/'.$temp_file.$extTemp;
+		$milisecond = 1000000 * 0.05;
+
+
+		# si existe el path (temporal)
+		# significa que está siendo editado.
+		# hacer un loop de 20seg hasta que no exista el archivo
+		# ó: ha dejado de ser editado
+
+
+
+		if(file_exists($tempPath))
+		{
+			### new way of edit files (partial-async) 2021-04-01
+			$starttime = time();
+			do{
+				## Buscar si el archivo no existe
+				if(!file_exists($tempPath))
+				{
+					# buscar de nuevo el archivo
+					$get = SearchDecodeAndConvert::JSON( $db_name, $__id__ );
+					$InsertData = $get;
+					$statusTempFile = 'available-to-create';
+					break;
+				}else if((time() - filemtime($tempPath)) > 4 && file_exists($tempPath) ){
+					// si el archivo sigue alli durante 4 segundos es debido a un error.
+					unlink($tempPath);
+					$get = SearchDecodeAndConvert::JSON( $db_name, $__id__ );
+					$InsertData = $get;
+					$statusTempFile = 'available-to-create';
+					break;
+				}
+			}while (file_exists($tempPath));
+
+			$statusTempFile = 'temp file do not was eliminate';
+		}else{
+			# si no existe el temp_file
+			$statusTempFile = 'available-to-create';
+		}
+		if($statusTempFile == "available-to-create"){
+			if(!file_exists($tempFolder)){
+				mkdir($tempFolder, 0755);
+				chmod($tempFolder, 0755);
+			}
+			// create temp file
+			file_put_contents($tempPath, $InsertData, LOCK_EX);
+
+			// add permissions
+			chmod(DB_LIBS_FOLDER, 0755);
+			chmod(DB_TEMP_FOLDER, 0755);
+			chmod($db_url, 0755);
+			chmod($tempPath, 0755);
+
+			// move to real path.
+			rename($tempPath, $db_url);
+
+			return TRUE;
+		}else{
+			return NULL;
+		}		
+	}
+	/**
+	 * Create cache file for routes of files for collections or DB folder...
+	 * used in: Database::UpdateContent
+	 * @db_url {string} pass any path route to a json file in a collection or DB Folder.
+	 */
+	public static function createCacheFileOnUpdate(string $db_url, string $db_name, bool $is_dbUrl = TRUE)
+	{
+		$db_hash = Generate::hash($db_name);
+		if($is_dbUrl == TRUE){
+			$splitted_path = explode(Generate::hash($db_name), $db_url)[1];
+			$json = $splitted_path;
+		}else{
+			$json = $db_url.".json";
+		}
+		$cacheFile = Database::getCacheJson($db_hash);		
+		if($cacheFile == FALSE){
+			self::createCacheFiles( $db_hash, $db_name );
+		}else{
+			self::pushCacheFile( $json, $db_hash, $db_name );
+		}
 	}
 /*
 *
@@ -418,9 +626,13 @@ public static function SearchDB( $db_name, $getAll = FALSE, $IsObject = FALSE )
 		##########################
 		self::UpdateContent( $db_name, $__id__, '__id__', $new_id );
 		##########################
-		$db_name = md5($db_name);
-		$__id__ = md5(md5($__id__));
-		$new_id = md5(md5($new_id));
+		$db_name = Generate::hash($db_name);
+		$__id__ = Generate::hash($__id__);  # one hash
+		$__id__ = Generate::hash($__id__);	# & second time hash.
+		###########
+		$new_id = Generate::hash($new_id);  # one hash
+		$new_id = Generate::hash($new_id);	# & second time hash.
+		#############
 		$db_url = DB_LIBS_FOLDER.$db_name.'/'.$__id__.'.json';
 		if(!file_exists($db_url)){return null;}
 		$new_url = DB_LIBS_FOLDER.$db_name.'/'.$new_id.'.json';
@@ -444,34 +656,42 @@ public static function SearchDB( $db_name, $getAll = FALSE, $IsObject = FALSE )
 			}
 			return $NumberOfFiles;
 		}
-		$db_name = md5($db_name);
+		$db_name = Generate::hash($db_name);
 		$iterator = new GlobIterator(DB_LIBS_FOLDER.$db_name.'/*.json');
 		$NumberOfFiles = $iterator->count();
 		return $NumberOfFiles;
 	}
-	public static function SearchingFor( $coincidences, $string )
+	public static function SearchingFor( $coincidences, $string, $as = 'bool' )
 	{
 		##############################
 		if ( empty( $coincidences ) ) {return NULL;}
 		##############################
 		$string = strtolower($string);
 		$tlwr_coincidences= array();
-		foreach ($coincidences as $coincidences) 
+		# to search the total of request.
+		$totalString = array_unshift($coincidences, implode(" ", $coincidences));
+
+		foreach ($coincidences as $key => $coincidences) 
 		{
 			$coincidences = strtolower($coincidences);
-			$tlwr_coincidences[] = $coincidences;
+			$coincidences = self::strNoAccent($coincidences);
+			$tlwr_coincidences[$key] = $coincidences;
 		}
-		foreach ($tlwr_coincidences as $coincidence) 
+		foreach ($tlwr_coincidences as $key => $coincidence) 
 		{		
-			$string = str_replace('á', 'a', $string);
-			$string = str_replace('é', 'e', $string);
-			$string = str_replace('í', 'i', $string);
-			$string = str_replace('ó', 'o', $string);
-			$string = str_replace('ú', 'u', $string);
+			$string = self::strNoAccent($string);
 			$result = strpos( ' '.$string, $coincidence );
 			if ( $result == FALSE ){return NULL;}
+			else{
+				if($as == 'bool'){
+					return TRUE;
+					break;
+				}elseif ($as == 'key') {
+					return $key;
+					break;
+				}
+			}
 		}
-		return TRUE;
 	}
 	public static function Output( $files )
 	{	
@@ -492,10 +712,78 @@ public static function SearchDB( $db_name, $getAll = FALSE, $IsObject = FALSE )
 		else
 		{
 			$json = $files;
-			$json = file_get_contents($json);
-			$json = json_decode($json, FALSE);
+			try {
+				$json = file_get_contents($json);
+				$json = json_decode($json, FALSE);
+			} catch (\Throwable $th) {
+				//throw $th;
+			}
 			return $json;
 		}
+	}
+	public static function getCacheJson($db_hash)
+	{
+		$cache = DB_CACHE_FOLDER."$db_hash.json";
+		if(!file_exists($cache)){
+			return FALSE;
+		}
+		return $cache;
+	}
+	public static function getRoutesCacheFiles($db_hash)
+	{
+		$content = self::getCacheFiles($db_hash);
+		$paths = [];
+		foreach ($content->files as $name => $json) {
+			$paths[] = DB_LIBS_FOLDER . "$db_hash/$json";
+		}
+		return $paths;
+	}
+	public static function getCacheFiles($db_hash)
+	{
+		$cache = self::getCacheJson($db_hash);
+		if($cache == FALSE) { return FALSE; }
+		$cache = file_get_contents($cache);
+		return json_decode($cache, FALSE);
+	}
+	public static function pushCacheFile($json, $db_hash, $db_name)
+	{
+		$file = DB_CACHE_FOLDER . "$db_hash.json";
+		if(!file_exists($file)){ return FALSE; }
+		$files = file_get_contents( $file );
+		if($files == FALSE){ return FALSE; }
+		$files = json_decode($files, FALSE);
+		if(!isset($files->files)){ return FALSE; }
+		$files->files = (array) $files->files;
+
+		$files->files[$json] = $json;
+		$files = json_encode($files, FALSE);
+		file_put_contents(DB_CACHE_FOLDER . "$db_hash.json", $files, LOCK_EX);
+	}
+	public static function createCacheFiles( $db_hash, $db_name )
+	{
+		chmod(DB_CACHE_FOLDER, 0755);
+		file_put_contents(DB_CACHE_FOLDER . '.htaccess', 'Options -Indexes');
+		$file = DB_CACHE_FOLDER . "$db_hash.json";
+		if(file_exists($file)){ return FALSE; }
+
+		$files = GET::DB( $db_name );
+		$parsedFiles = [];
+		foreach ($files as $file) {
+			$file = basename($file);
+			$parsedFiles[$file] = $file;
+		}
+		$json = [
+			"CreationDate" => date("Y-d-m"),
+			"time" => time(),
+			"FromDB" => $db_name,
+			"lastmodified" => time(),
+			"type" => "cache-files",
+			"db_hash" => $db_hash,
+			"files" => $parsedFiles
+		];
+		$content = json_encode($json, FALSE, JSON_PRETTY_PRINT);
+		file_put_contents(DB_CACHE_FOLDER."$db_hash.json", $content, LOCK_EX);
+		return $content;
 	}
 	public static function GetData( $db_name = NULL, $PagePosition = '0' , $PerPage = '10', $ReturnLimit = FALSE  )
 	{
@@ -507,7 +795,29 @@ public static function SearchDB( $db_name, $getAll = FALSE, $IsObject = FALSE )
 		}
 		# if we are searching in one specific DB
 		elseif ( $db_name !== NULL )
-		{	
+		{
+			/*$db_hash = Generate::hash($db_name);
+			$files = self::getCacheFiles($db_hash);	
+			if($files !== FALSE){
+				if($files->lastmodified < filemtime(DB_CACHE_FOLDER . ".")){
+					$files = self::getCacheFiles($db_hash);
+				}else{
+					$files = GET::DB( $db_name );
+					$parsedFiles = self::getParsedCacheFiles($db_hash, $files);
+					self::cacheFiles($db_hash, $parsedFiles);
+				}
+			}else{
+				$files = GET::DB( $db_name );
+				$parsedFiles = self::getParsedCacheFiles($db_hash, $files);
+				self::cacheFiles($db_hash, $parsedFiles);
+			}*/
+			/*$db_hash = Generate::hash($db_name);
+			$json = self::getCacheJson($db_hash);
+			if($json == FALSE){
+				$files = GET::DB( $db_name );
+			}else{
+				$files = self::getRoutesCacheFiles( $db_hash );
+			}*/
 			$files = GET::DB( $db_name );
 			return $files;
 		}	
@@ -528,12 +838,17 @@ public static function SearchDB( $db_name, $getAll = FALSE, $IsObject = FALSE )
 		#####################	
 		foreach ($GetData as $GetData) 
 		{	
-			if ( strtolower($GetData->$ItemName) == strtolower($Data) )
+			if ( strtolower($GetData->$ItemName ?? '') == strtolower($Data) )
 			{
 				return $DataID = $GetData->__id__;
 			}
 		}
 		return FALSE;
+	}
+	public static function get_id($db_name, $ItemName, $Data)
+	{
+		$id = self::OutputId($db_name, $ItemName, $Data);
+		return $id;
 	}
 	public static function SliceData( $PerPage, $CountData )
 	{
@@ -551,30 +866,72 @@ public static function SearchDB( $db_name, $getAll = FALSE, $IsObject = FALSE )
 		$files = Generate::Pagination( $files, $PagePosition, $PerPage, $limit );
 		return $files;
 	}
-	public static function SortingData( $GetData, $content, $sortby = 'asc' )
+	public static function SortingData( $GetData, $content, $sortby = 'asc', $dataType = 'FILES' )
 	{
 		$sorting = array();
+		if($GetData == NULL){ return []; }
 		foreach( $GetData as $key => $value )
 		{
-			$Get = Database::Output( $value );
-			$sorting[$value] = $Get->$content;	
-		}
+			switch ($dataType) 
+			{
+				case 'ARRAY':
+					# Guardar dentro del key
+					# el contenido del array
+					# esto lo guarda como un string
+					# y permite mostrarlo más adelante.
+					$sorting[] = [
+						"value_sort" => $value[$content] ?? "",
+						"content" => json_encode($value, TRUE)
+					];
+					break;
+				case 'OBJECT':
+					$sorting[] = [
+						"value_sort" => $value->$content ?? "",
+						"content" => json_encode($value, TRUE)
+					];
+					break;
+				default:
+					# por default el intentará
+					# abrir archivos y ordenar datos.
+					$Get = Database::Output( $value );
+					$sorting[$value] = $Get->$content;
+				break;
+			}
+		}			
 		if ( $sortby == 'desc'){arsort($sorting);}
 		if ( $sortby == 'asc'){asort($sorting);}
 		$sorted = array();
+		
 		foreach ($sorting as $key => $value) 
 		{
-			$sorted[] = $key;
+			switch ($dataType) {
+				case 'ARRAY':
+					$sorted[] = json_decode($value["content"], TRUE);
+					break;
+				case 'OBJECT':
+					$sorted[] = json_decode($value["content"], TRUE);
+					break;
+				default:
+					# cuando se usan métodos
+					# exclusivos de MDB
+					$sorted[] = $value["value_sort"];
+					break;
+			}
 		}
 		return $sorted;
 	}
-	public static function SearchEngine( $GetData, $QueryArray )
+	public static function SearchEngine( $GetData, $QueryArray, $is_file = TRUE )
 	{
-		$paths = array();
-		foreach ($GetData as $key => $GetData) 
+
+		$paths = [];
+		foreach ($GetData as $GetData) 
 		{
-			$Data = Database::Output( $GetData );
-			foreach ($Data as $key => $Searching) 
+			if($is_file == TRUE){
+				$data = Database::Output( $GetData );
+			}else{
+				$data = $GetData;
+			}
+			foreach ($data as $Searching) 
 			{
 				$ParseQuery = self::SearchingFor( $QueryArray, $Searching );
 				if( $ParseQuery == TRUE )
@@ -587,7 +944,11 @@ public static function SearchDB( $db_name, $getAll = FALSE, $IsObject = FALSE )
 		if (empty($paths)){return NULL;}
 		return $paths;		
 	}
-} 	# Cierre de la Clase Database
-	# Inicio de funciones... Genera convenciones para llamar estas clases.
+} 	
+
+# Cierre de la Clase Database
+# Inicio de funciones... Genera convenciones para llamar estas clases.
 require_once 'functions.class.php';
+
+
 ?>
