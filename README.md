@@ -149,7 +149,7 @@ Create a backup for collection of documents.
  
   // any old method still working.
 ```
-### Get Documents | $documents->delete()
+### Delete Documents | $documents->delete()
 Delete a collection of documents
 ```php
  $mdb = new mdb();
