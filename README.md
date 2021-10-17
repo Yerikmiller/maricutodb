@@ -1,4 +1,3 @@
-
 <h1 align="center" class="vicinity rich-diff-level-zero">
   MDB | PHP Flat File Database Manager
 </h1>
@@ -40,7 +39,7 @@ MDB | Features
 - Sort the data in a alphabetical and numerical way.
 - easy paginator and filter system.
 - store passwords with encrypt method
-- Backup DBs.
+- Backup and restore collections
 - single documents method to create single documents with data
 - chunk items into files with the collection method.
 - create subcollections inside fields.
@@ -435,4 +434,3 @@ This project is licensed under the MIT License.
 https://github.com/Yerikmiller/maricutodb/blob/master/LICENSE
 
 About Author: https://maricuto.website
-
