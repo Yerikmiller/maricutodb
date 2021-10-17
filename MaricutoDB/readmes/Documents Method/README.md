@@ -5,22 +5,22 @@ Table of contents
 <ol>
     <li>
         <a href="https://github.com/Yerikmiller/maricutodb/tree/master/MaricutoDB/readmes/Documents%20Method/documents" >
-            get documents (CRUD)
+            reference a collection (documents) (CRUD)
         </a>
     </li>
     <li>
         <a href="https://github.com/Yerikmiller/maricutodb/tree/master/MaricutoDB/readmes/Documents%20Method/document" >
-            single document (CRUD)
+            single document from collection (CRUD)
         </a>
     </li>
     <li>
         <a href="https://github.com/Yerikmiller/maricutodb/tree/master/MaricutoDB/readmes/Documents%20Method/field" >
-            field (CRUD)
+            field from document (CRUD)
         </a>
     </li>
     <li>
         <a href="https://github.com/Yerikmiller/maricutodb/tree/master/MaricutoDB/readmes/Documents%20Method/subcollection" >
-            subcollection in field (CRUD)
+            subcollections inside field (CRUD)
         </a>
     </li>
     <li>
