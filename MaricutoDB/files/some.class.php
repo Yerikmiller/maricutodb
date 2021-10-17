@@ -418,7 +418,6 @@ class Backup
 			$just_name = basename($paths);
 			copy($paths, $MakeBackup.'/'.$just_name);
 		}
-		copy($db_folder_name.'/.htacces', $MakeBackup.'/.htacces');
 	}
 }
 

@@ -17,21 +17,21 @@ class mdb
 	{
 		# props: 
 		# sortby, dataType, field, limit, position, searchFor, fromDate, untilDate, itemNameForDates, filters.
-
-		$props["sortby"] = $props["sortby"];
-		$props["dataType"] = $props["dataType"];
-		$props["itemName"] = $props["field"];
-		$props["PerPage"] = $props["limit"];
-		$props["position"] = $props["position"];
-		$props["searchFor"] = $props["searchFor"];
-		$props["fromDate"] = $props["fromDate"];
-		$props["untilDate"] = $props["untilDate"];
-		$props["itemNameForDates"] = $props["itemNameForDates"];
-		$props["filters"] = $props["filters"];
+		
+		$props["sortby"] = $props["sortby"] ?? "desc";
+		$props["dataType"] = $props["dataType"] ?? "OBJECT";
+		$props["itemName"] = $props["field"] ?? "time";
+		$props["PerPage"] = $props["limit"] ?? 30;
+		$props["position"] = $props["position"] ?? 0;
+		$props["searchFor"] = $props["searchFor"] ?? FALSE;
+		$props["fromDate"] = $props["fromDate"] ?? FALSE;
+		$props["untilDate"] = $props["untilDate"] ?? FALSE;
+		$props["itemNameForDates"] = $props["itemNameForDates"] ?? "time";
+		$props["filters"] = $props["filters"] ?? FALSE;
 
 		$options = [
 			"sortby" => $props["sortby"] ?? "desc",
-			"dataType" => $props["dataType"] ?? "ARRAY",
+			"dataType" => $props["dataType"] ?? "OBJECT",
 			"itemName" => $props["itemName"] ?? "time", // item name to sort by
 			"PerPage" => $props["PerPage"] ?? 30,
 			"page_position" => $props["position"] ?? 0,

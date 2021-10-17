@@ -76,6 +76,18 @@ class MDBdocuments
         $id = $mdb->outputId($this->collection, $field, $fieldContent);
         return $mdb->table($this->collection, $id);
     }
+    public function where(string $value, string $operator, string $field)
+    {
+        $props = [
+            "query" => [
+                "field" => $field,
+                "operator" => $operator,
+                "content" => $value,
+            ]
+        ];
+        $results = $this->documents($props);
+        return $results->results;
+    }
     public function get($props = [])
     {
         return $this->documents($props);
@@ -94,9 +106,28 @@ class MDBdocuments
         $table = $mdb->table($this->collection, $id);
         $getter = new MDBGetFieldsOperator($this->collection, $table, $id);
         return $getter;
-        
-        
-    }    
+    }
+    public function backup()
+    {
+        if($this->collection_exist == TRUE){
+            Backup::DB( $this->collection );
+        }
+    }
+    public function restoreBackup()
+    {
+        if($this->collection_exist == TRUE){
+            Restore::DB( $this->collection );
+        }
+    }
+    public function delete($backup = TRUE)
+    {
+        if($this->collection_exist == TRUE){
+            if($backup == TRUE){
+                $this->backup();
+            }
+            DELETE::DB( $this->collection );
+        }
+    }
 }
 
 
@@ -109,7 +140,105 @@ class MDBOpenFilesOperator
         $this->files = $files;
         $this->collection = $collection;
         $this->props = $props;
+        if(isset($this->props["query"]) == TRUE){
+            return $this->query($this->props["query"]);
+        }
         return __CLASS__;
+    }
+    public function query($query)
+    {
+        $this->field = $query["field"];
+        $this->operator = $query["operator"];
+        $this->content = $query["content"];
+        $this->results = [];
+        switch ($this->operator) {
+            case '==':
+                $this->results = $this->all(function($document){
+                    $field = $this->field;
+                    if($document->$field == $this->content){
+                        return $document;
+                    }
+                    return FALSE;
+                });
+            break;
+            case '===':
+                $this->results = $this->all(function($document){
+                    $field = $this->field;
+                    if($document->$field === $this->content){
+                        return $document;
+                    }
+                    return FALSE;
+                });
+            break;
+            case '!=':
+                $this->results = $this->all(function($document){
+                    $field = $this->field;
+                    if($document->$field !== $this->content){
+                        return $document;
+                    }
+                    return FALSE;
+                });
+            break;
+            case '>':
+                $this->results = $this->all(function($document){
+                     $field = $this->field;
+                    if($document->$field > $this->content){
+                        return $document;
+                    }
+                    return FALSE;
+                });
+            break;
+            case '>=':
+                $this->results = $this->all(function($document){
+                    $field = $this->field;
+                    if($document->$field >= $this->content){
+                        return $document;
+                    }
+                    return FALSE;
+                });
+            break;
+            case '<':
+                $this->results = $this->all(function($document){
+                    $field = $this->field;
+                    if($document->$field < $this->content){
+                        return $document;
+                    }
+                    return FALSE;
+                });
+            break;
+            case '<=':
+                $this->results = $this->all(function($document){
+                     $field = $this->field;
+                    if($document->$field <= $this->content){
+                        return $document;
+                    }
+                    return FALSE;
+                });
+            break;
+            case 'in':
+                $this->results = $this->all(function($document){
+                    $field = $this->field;
+                    if(strpos(strtolower($document->$field), strtolower($this->content)) !== FALSE){
+                        return $document;
+                    }
+                    return FALSE;
+                });
+            break;
+            case 'not-in':
+                $this->results = $this->all(function($document){
+                    $field = $this->field;
+                    if(strpos(strtolower($document->$field), strtolower($this->content)) == FALSE){
+                        return $document;
+                    }
+                    return FALSE;
+                });
+            break;
+
+            default:
+                $this->results = [];
+            break;
+        }
+        return $this->results;
     }
     public function getDocumentByJSON(string $json_id)
     {
@@ -172,6 +301,12 @@ class MDBGetFieldsOperator
     {
         return $this->update($arrayContent);
     }
+    public function updateId(string $id)
+    {
+        $mdb = new mdb();
+        Database::UpdateTableName( $this->collection, $this->table->__id__, $id);
+        return $mdb->table($this->collection, $id);
+    }
     public function update(array $arrayContent, $is_strict = FALSE)
     {
         $mdb = new mdb();
@@ -212,7 +347,7 @@ class MDBGetFieldsOperator
     public function field($fieldName)
     {
         return new MDBOnFieldManaging($this->collection, $this->table, $fieldName);
-    }     
+    }
 }
 
 /**
@@ -261,9 +396,9 @@ class MDBOnFieldManaging
         DELETE::Item($this->collection, $this->table->__id__, $this->fieldName);
         return TRUE;
     }
-    public function subcollection()
+    public function subcollection(string $subcollection)
     {
-        return new MDBSubCollectionManager($this->collection, $this->table, $this->fieldName, $this->content);
+        return new MDBSubCollectionManager($this->collection, $this->table, $subcollection, $this->content);
     }
 }
 
@@ -280,6 +415,22 @@ class MDBSubCollectionManager
         $this->collection = $collection;
         $this->table = $table;
         $this->subcollection = $subcollection; // fieldName
+        return __CLASS__;
+    }
+    public function show($id = NULL)
+    {
+        $subcollection = $this->subcollection;
+        if(is_string($id)){
+            $data = $this->table->$subcollection;
+            $data = json_decode($data, TRUE);
+            $data = $data[$id] ?? [];
+            return $data;
+        }
+        $data = $this->table->$subcollection;
+        if(is_string($data)){
+            $data = json_decode($data, TRUE);
+        }
+        return $data;
     }
     public function push($id, array $arrayContent)
     {
@@ -287,12 +438,18 @@ class MDBSubCollectionManager
         if(is_int($id)){
             $id = strval($id);
         }
+        $table = $this->table;
+        if(!isset($table->$id)){
+            $arrayContent["time"] = time();
+        }
+        $arrayContent["modified"] = time();
         $arrayContent["id"] = $id;
         $subcollection = $this->subcollection;
         $records = [
 			$id => $arrayContent
 		];
-        return $mdb->addElementListIntoField($this->collection, $this->table->__id__, $records, $subcollection, $id);
+        
+        return $mdb->addElementListIntoField($this->collection, $table->__id__, $records, $subcollection, $id);
     }
     public function delete(string $id)
     {
@@ -404,5 +561,10 @@ for ($i=28419; $i < 50000; $i++) {
 $mdb->documents("transactions")->update("848154416__56", [
     "saludo" => "hola de nuevo",
 ]);*/
+
+
+$mdb = new mdb();
+$cars = $mdb->documents("cars")->document("KK8hS3sTceIeu")->updateId("123456");
+exit();
 
 ?>
