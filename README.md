@@ -28,7 +28,7 @@ https://github.com/Yerikmiller/maricutodb/blob/59ce856cab3c2502dcb6800dce3b5f00c
 
 MDB | Features
 ---------------------
-*Create a collections of data easily.*
+*Create collections of data easily.*
 
 - It's lightweight and hard to overload the system
 - can manage up to 200.000 items per collection like users, news, etc...
