@@ -64,23 +64,31 @@ Timezone is used to created json files and time fields.
 ##### Basic Example
 ```php
   $mdb = new mdb();
+  // create
   $user = $mdb->documents("users")->create("user_1", [
     "name" => "Louis"
   ]);
-  
+  // show $user.
   var_dump($user);
+
+  // update with new user
+  $user = $mdb->documents("users")->create("user_2", [
+    "name" => "Sam"
+  ]);
   
+  // get all users
   $users = $mdb->documents("users")->get()->all();
   
+  // show all
   var_dump($users);
 ```
 
 New Feataures | added at 2021-10-15
 ---------------------
-- New methods to learn easily.
+- New helper methods to learn MDB easily
 - Any deprecated method still working.
 - Temp files generator to avoid error on editing ('updates' are made it in a temp file first).
-- custom filter methods.
+- Custom filter methods & new paginator.
 
 
 ###  - <a href="https://github.com/Yerikmiller/maricutodb/tree/master/MaricutoDB/readmes">Documentation</a>
