@@ -562,9 +562,4 @@ $mdb->documents("transactions")->update("848154416__56", [
     "saludo" => "hola de nuevo",
 ]);*/
 
-
-$mdb = new mdb();
-$cars = $mdb->documents("cars")->document("KK8hS3sTceIeu")->updateId("123456");
-exit();
-
 ?>
