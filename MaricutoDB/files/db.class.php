@@ -666,6 +666,9 @@ public static function SearchDB( $db_name, $getAll = FALSE, $IsObject = FALSE )
 		##############################
 		if ( empty( $coincidences ) ) {return NULL;}
 		##############################
+		if(!is_string($string)){
+			return NULL;
+		}
 		$string = strtolower($string);
 		$tlwr_coincidences= array();
 		# to search the total of request.

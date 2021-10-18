@@ -532,6 +532,7 @@ class MaricutoDBPaginator
 	}
 	public function parser($arrayData)
 	{
+		
 		$arrayData = $this->filters($arrayData, $this->props["filters"]);
 		$arrayData = $this->sortByTime($arrayData);
 
@@ -548,6 +549,10 @@ class MaricutoDBPaginator
 			$arrayData = [];
 			$this->rawData = $arrayData;
 			$paginateInfo = FALSE;
+		}
+
+		if($arrayData == NULL){
+			$arrayData = [];
 		}
 		return [
 			"items" => count($arrayData),
