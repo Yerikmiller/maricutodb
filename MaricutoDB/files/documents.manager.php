@@ -258,6 +258,10 @@ class MDBOpenFilesOperator
     {
         $mdb = new mdb();
         $files = [];
+        if(!is_array($this->files)){
+            $this->files = [];
+            return [];
+        }
         foreach ($this->files as $file) {
             $file = $mdb->openFiles([$file])[0];
 
@@ -458,108 +462,5 @@ class MDBSubCollectionManager
         return $mdb->removeElementListIntoField($this->collection, $this->table->__id__, $subcollection, $id);
     }
 }
-/*
-$mdb = new mdb();
-$user = $mdb->documents("users")->create("123", [
-    "firstname" => "Yorman",
-    "lastname" => "Maricuto",
-]);*/
-
-// $transactions = $mdb->documents("transactions")->create();
-// $mdb->documents("users")->document("123")->show();
-/*
-
-$user = $mdb->documents("users")->document("123")->update([
-    "firstnsasme" => "José",
-], "strict");
-
-$user = $mdb->documents("users")->document("123")->update([
-    "firstnsasme" => "José",
-]);
-
-*/
-// $mdb->documents("users")->document("123")->delete();
-// $mdb->documents("users")->document()->all($filter_function);
-// $mdb->documents("users")->document()->all($filter_function);
-// $mdb->documents("users")->document("123")->field("lastname")->show();
-// $mdb->documents("users")->document("123")->field("lastname")->update();
-// $mdb->documents("users")->document("123")->field("firstname")->delete();
-
-/*
-$user = $mdb->documents("users")->document("123")->field("firstname")->update([
-    "primer_nombre" => "yorman",
-    "segundo_nombre" => "josé"
-]);
-*/
-
-/*
-$transactions = $mdb->documents("transactions")->create();
-
-
-$documents = $mdb->documents("transactions")->documents()->all(function($document){
-    if($document->username === "usuario numero 40000"){
-        return $document;
-    }
-});
-
-var_dump($documents);
-exit();
-
-*/
-
-
-
-
-
-/*
-for ($i=9000; $i < 50000; $i++) {   
-    $mdb = new mdb();
-    $document = $i;
-    $transaction = $mdb->documents("transactions")->document($document)->push([
-        "colecciones" => "creada en: ".time(),
-        "username" => "usuario numero ".$i
-    ]);
-
-    
-
-    for ($i2=1; $i2 < 1; $i2++) { 
-        $mdb = new mdb();
-        $HASH = $mdb->randomString(32, FALSE)."__$i2";
-        $TransactionId = $mdb->randomString(8, FALSE);
-        $mdb->documents("transactions")->document($document)->subcollection("mi_coleccion")->push($TransactionId, [
-            "price:hash" => $HASH,
-            "type:hash" => $HASH,
-            "currency:hash" => $HASH,
-            "city:hash" => $HASH,
-            "payment:hash" => $HASH,
-            "status:hash" => $HASH,
-        ]);
-        
-    }
-}
-
-
-
-var_dump($mdb->documents("transactions")->documents()->all());
-exit();*/
-/*
-$mdb = new mdb();
-$mdb->maxFieldsCollection = 500;
-for ($i=28419; $i < 50000; $i++) { 
-    $HASH = $mdb->randomString(32, FALSE);
-    $mdb->collection("transactions_stripe")->push($HASH, [
-        "type:hash" => $HASH,
-    ]);
-}*/
-
-
-// var_dump($mdb->collection("transactions_stripe")->getCount());
-
-
-
-/*
-$mdb->documents("transactions")->update("848154416__56", [
-    "saludo" => "hola de nuevo",
-]);*/
 
 ?>
