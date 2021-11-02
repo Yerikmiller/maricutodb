@@ -508,6 +508,7 @@ class MaricutoDBPaginator
 	}
 	public function sortByTime($arrayData)
 	{
+		
 		$from = $this->props["fromDate"] ?? FALSE;
 		$until = $this->props["untilDate"] ?? FALSE;
 		$itemName = $this->props["itemNameForDates"] ?? FALSE;
@@ -515,15 +516,32 @@ class MaricutoDBPaginator
 			return $arrayData;
 		}
 		$from = strtotime($from);
-		$until = strtotime($until);
+		$until = strtotime($until);		
 		$getSorted = [];
 		foreach ($arrayData as $key => $data) {
 			// time stored in array item
-			if(!isset($data[$itemName])){ continue; }
-			$time = strtotime($data[$itemName]);
-			if($from <= $time && $time <= $until){
-				$getSorted[] = $data;
+			if(is_object($data)){				
+				if(!isset($data->$itemName)){ continue; }
+				$time = $data->$itemName;
+				$time = intval($time);
+				if(!is_int($time)){
+					$time = strtotime($data->$itemName);
+				}
+				if($from <= $time && $time <= $until){
+					$getSorted[] = $data;
+				}
+			}else{
+				if(!isset($data[$itemName])){ continue; }
+				$time = $data[$itemName];
+				$time = intval($time);
+				if(!is_int($time)){
+					$time = strtotime($data[$itemName]);
+				}
+				if($from <= $time && $time <= $until){
+					$getSorted[] = $data;
+				}
 			}
+			
 		}
 		/******/ # use this data to parse something.
 			$this->AllDataByTime = $getSorted;
