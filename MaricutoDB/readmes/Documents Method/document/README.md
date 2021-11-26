@@ -27,7 +27,9 @@ You can access to a single file with the document method
 ```php
   # $document = $mdb->documents($collection)->document($documentId)
   $mdb = new mdb();
-  $document = $mdb->documents("users")->document("user_1");
+  
+  # to return object:
+  $document = $mdb->documents("users")->document("user_1")->render();
 
 ```
 From here now you can access to these methods:
