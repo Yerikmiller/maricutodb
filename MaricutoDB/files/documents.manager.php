@@ -293,6 +293,10 @@ class MDBGetFieldsOperator
         $this->tableId = $tableId;
         return __CLASS__;
     }
+    public function render()
+    {
+        return $this->table;
+    }
     public function show()
     {
         return $this->table;
