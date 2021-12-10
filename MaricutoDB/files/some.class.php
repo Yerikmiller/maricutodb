@@ -315,6 +315,7 @@ class DELETE
 		//
 		$DeleteData = $Delete;
 		//
+		if(!file_exists($db_url)){ return; }
 		unset($DeleteData->$ItemName);
 		$DeleteData = json_encode( $DeleteData, JSON_PRETTY_PRINT );
 		file_put_contents($db_url, $DeleteData);
